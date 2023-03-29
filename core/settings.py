@@ -93,13 +93,9 @@ WSGI_APPLICATION = "core.wsgi.application"
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {
-    "default": {
-        "ENGINE": getenv("DB_ENGINE"),
-        "NAME": getenv("DB_NAME"),
-        "USER": getenv("DB_USER"),
-        "PASSWORD": getenv("DB_PASSWORD"),
-        "HOST": getenv("DB_HOST"),
-        "PORT": getenv("DB_PORT"),
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'mydatabase',
     }
 }
 
