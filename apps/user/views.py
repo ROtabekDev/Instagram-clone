@@ -1,12 +1,11 @@
-from django.shortcuts import render, redirect
-from django.views.generic import TemplateView
-from django.contrib.auth import authenticate, login, logout
 import re
+
 from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.hashers import make_password
+from django.shortcuts import render, redirect
 
 from apps.user.models import CustomUser
-from django.contrib.auth.hashers import make_password
-
 from apps.user.utils import phone_regex_pattern, email_regex_pattern
 
 
