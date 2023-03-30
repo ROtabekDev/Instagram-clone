@@ -1,14 +1,12 @@
-from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.db import models
 
-from apps.user.choices import GenderType
+from apps.user.models import CustomUser
 from helpers.models import BaseModel, MediaType
-from sorl.thumbnail.fields import ImageField
-from phonenumber_field.modelfields import PhoneNumberField
 
 
 class Story(BaseModel):
-    user = models.ForeignKey('user.User', on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.user.username

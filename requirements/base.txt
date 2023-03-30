@@ -5,3 +5,4 @@ python-dotenv==1.0.0
 django-jazzmin==2.6.0
 django-phonenumber-field==7.0.2
 sorl-thumbnail==12.9.0
+django-phonenumbers==1.0.1
