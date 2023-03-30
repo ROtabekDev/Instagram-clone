@@ -7,6 +7,7 @@ from django.shortcuts import render, redirect
 
 from apps.user.models import CustomUser
 from apps.user.utils import phone_regex_pattern, email_regex_pattern
+from django.views.generic import TemplateView
 
 
 def sign_in(request):
@@ -67,3 +68,7 @@ def sign_out(request):
     logout(request)
 
     return redirect('sign-in')
+
+
+class ProfileView(TemplateView):
+    template_name = "profile.html"

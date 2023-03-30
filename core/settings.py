@@ -157,3 +157,5 @@ AUTHENTICATION_BACKENDS = [
     'apps.user.utils.PhoneNumberBackend',
     'apps.user.utils.EmailBackend',
 ]
+
+LOGIN_URL="/sign-in/"

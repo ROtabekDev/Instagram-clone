@@ -3,7 +3,7 @@ import mimetypes
 from django.db import models
 from django.conf import settings
 
-from helpers.models import BaseModel
+from helpers.models import BaseModel, MediaType
 
 
 class Post(BaseModel):
@@ -15,7 +15,7 @@ class Post(BaseModel):
 
     def __str__(self):
         return str(self.id)
-    
+
     class Meta:
         verbose_name = 'Post'
         verbose_name_plural = 'Postlar'
@@ -31,12 +31,11 @@ class PostFileContent(BaseModel):
 
     post_id = models.ForeignKey(Post, on_delete=models.CASCADE)
     file = models.FileField('Fayl', upload_to='post/post_file_content/file/')
-    content_type = models.CharField('Fayl turi', max_length=10, choices=CONTENT_TYPE)
-
+    type = models.CharField(max_length=6, choices=MediaType.choices, default=MediaType.IMG)
 
     def save(self, *args, **kwargs):
         mime_type, encoding = mimetypes.guess_type(self.file.path)
- 
+
         if 'video' in mime_type:
             self.content_type = 'Video'
         else:
@@ -44,14 +43,13 @@ class PostFileContent(BaseModel):
 
         super().save(*args, **kwargs)
 
-
     def __str__(self):
         return str(self.id)
-
 
     class Meta:
         verbose_name = 'Post uchun kontent'
         verbose_name_plural = 'Post uchun kontentlar'
+
 
 class Location(BaseModel):
     """Manzil uchun model"""
@@ -67,18 +65,20 @@ class Location(BaseModel):
         verbose_name = 'Manzil'
         verbose_name_plural = 'Manzillar'
 
+
 class Hashtag(BaseModel):
     """Teglar uchun model"""
 
     tag_name = models.CharField('Nomi', max_length=150)
     slug = models.SlugField('Slugi', max_length=150)
-    
+
     def __str__(self):
         return self.tag_name
-    
+
     class Meta:
         verbose_name = 'Teg'
         verbose_name_plural = 'Teglar'
+
 
 class PostHastag(BaseModel):
     """Postdagi hashteglar uchun model"""
