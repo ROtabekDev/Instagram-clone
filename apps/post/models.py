@@ -20,6 +20,10 @@ class Post(BaseModel):
         verbose_name = 'Post'
         verbose_name_plural = 'Postlar'
 
+    @property
+    def comments_count(self):
+        return self.comment_set.count()
+
 
 class PostFileContent(BaseModel):
     """Post uchun content (Video yoki rasm)"""
