@@ -2,12 +2,12 @@ import re
 
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 
 from apps.user.models import CustomUser
 from apps.user.utils import phone_regex_pattern, email_regex_pattern
-from django.views.generic import TemplateView
 
 
 def sign_in(request):
@@ -70,5 +70,9 @@ def sign_out(request):
     return redirect('sign-in')
 
 
-class ProfileView(TemplateView):
-    template_name = "profile.html"
+@login_required(redirect_field_name='next')
+def profile(request, username):
+    context = {
+        'user': get_object_or_404(CustomUser, username=username)
+    }
+    return render(request, 'profile.html', context)
