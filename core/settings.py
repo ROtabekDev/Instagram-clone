@@ -54,6 +54,7 @@ CUSTOM_APPS = [
 THIRD_PARTY_APPS = [
     'sorl.thumbnail',
     'phonenumber_field',
+    'crispy_forms',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + CUSTOM_APPS + THIRD_PARTY_APPS
@@ -159,3 +160,4 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 LOGIN_URL="/sign-in/"
+ 
