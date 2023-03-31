@@ -8,12 +8,12 @@ from apps.post.models import Post
 def user_comment_post(sender, instance, created, *args, **kwargs):
     if created:
         comment = instance
+        post = comment.post_id 
         if comment.parent: 
             text_preview = f'{comment.user} shu inson sizning {post.id}-postdagi izohingizga javob yozdi.'
         else:
             text_preview = f'{comment.user} shu inson sizning {post.id}-postingizga izoh yozdi.'
-
-        post = comment.post_id 
+ 
         sender = comment.user
         Notification.objects.create(post_id=post, sender_id=sender, user_id=post.user_id, text_preview=text_preview, notification_type=2)
         
