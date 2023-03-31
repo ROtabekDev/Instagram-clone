@@ -1,9 +1,9 @@
 import json
-
+from django.shortcuts import render
 from django.views.generic import TemplateView
 from django.http import JsonResponse
 
-from apps.main.models import Comment
+from apps.main.models import Comment, Notification
 from apps.post.models import Post
 
 
@@ -28,3 +28,13 @@ def add_comment(request):
         "comment": comment.text
     }
     return JsonResponse(data)
+
+def ShowNotification(request):
+    user = request.user
+    notifications = Notification.objects.filter(user_id=user).order_by('-created_at')
+
+    context = {
+        'notifications': notifications,
+
+    }
+    return render(request, 'show-notification.html', context)
