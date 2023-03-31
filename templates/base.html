@@ -107,7 +107,7 @@
                 <a href="">
                     <button class="profile-button">
                         <div class="profile-button__border"></div>
-                        <a href="{% url 'profile' %}">
+                        <a href="{% url 'profile' user.username %}">
                             <div class="profile-button__picture">
                                 <img src="{% static 'assets2/images/6.jpg'%}" alt="User Picture">
                             </div>
