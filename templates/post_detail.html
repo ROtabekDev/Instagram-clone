@@ -51,7 +51,11 @@
                         <div class="post__header">
                             <div class="post__profile">
                                 <a href="{% url 'profile' post.user_id %}" class="post__avatar">
+                                {% if post.user_id.avatar %}
                                     <img src="{{ post.user_id.avatar.url }}" alt="User Picture">
+                                {% else %}
+                                    <img src="{% static 'default-user.png' %}" alt="User Picture">
+                                {% endif %}
                                 </a>
                                 <a href="{% url 'profile' post.user_id %}" class="post__user">@{{ post.user_id.username }}</a>
                             </div>
@@ -166,14 +170,26 @@
                                                     {% csrf_token %}
                                                     <div class="bg-light p-2">
                                                         
-                                                        <div class="d-flex flex-row align-items-start"><img class="rounded-circle" src="{{request.user.avatar.url}}" width="30" height="30">{{form.text}}</div>
+                                                        <div class="d-flex flex-row align-items-start">
+                                                            {% if request.user.avatar %}
+                                                            <img class="rounded-circle" src="{{request.user.avatar.url}}" width="30" height="30">
+                                                            {% else %}
+                                                            <img class="rounded-circle" src="{% static 'default-user.png' %}" width="30" height="30">
+                                                            {% endif %} 
+                                                            {{form.text}}
+                                                        </div>
                                                         <div class="mt-2 text-right"><button class="btn btn-primary btn-sm shadow-none" type="submit">Post comment</button></div>
                                                     </div>
                                                 </form>
                                                 
                                                 {% for comment in comments %}
                                                     <div class="bg-white p-2">
-                                                        <div class="d-flex flex-row user-info"><img class="rounded-circle" src="{{comment.user.avatar.url }}" width="30" height="30">
+                                                        <div class="d-flex flex-row user-info">
+                                                            {% if comment.user.avatar %}
+                                                            <img class="rounded-circle" src="{{ comment.user.avatar.url }}" width="30" height="30">
+                                                            {% else %}
+                                                                <img class="rounded-circle" src="{% static 'default-user.png' %}" width="30" height="30">
+                                                            {% endif %} 
                                                             <a href="{% url 'profile' comment.user %}" style="text-decoration: none;">
                                                             <div class="d-flex flex-column justify-content-start ml-2"><span class="d-block font-weight-bold name">{{comment.user.username}}</span><span class="date text-black-50"> {{comment.created_at}}</span></div></a>
                                                         </div>
