@@ -6,6 +6,9 @@
         Instagram
     </title>
 {% endblock title %}
+{% block css %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+{% endblock css %}
 {% block content %}
     <main class="main-container">
         <section class="content-container">
@@ -153,14 +156,14 @@
 
                             <div class="post__content">
                                 <div class="post__medias">
-                                    <div id="carouselExample" class="carousel slide">
+                                    <div id="carouselExample_{{ post.id }}" class="carousel slide">
                                         <div class="carousel-indicators">
-                                            <button type="button" data-bs-target="#carouselExampleIndicators"
+                                            <button type="button" data-bs-target="#carouselExample_{{ post.id }}Indicators"
                                                     data-bs-slide-to="0" class="active" aria-current="true"
                                                     aria-label="Slide 1"></button>
-                                            <button type="button" data-bs-target="#carouselExampleIndicators"
+                                            <button type="button" data-bs-target="#carouselExample_{{ post.id }}Indicators"
                                                     data-bs-slide-to="1" aria-label="Slide 2"></button>
-                                            <button type="button" data-bs-target="#carouselExampleIndicators"
+                                            <button type="button" data-bs-target="#carouselExample_{{ post.id }}Indicators"
                                                     data-bs-slide-to="2" aria-label="Slide 3"></button>
                                         </div>
                                         <div class="carousel-inner">
@@ -179,12 +182,12 @@
                                             {% endfor %}
                                         </div>
                                         <button class="carousel-control-prev" type="button"
-                                                data-bs-target="#carouselExample" data-bs-slide="prev">
+                                                data-bs-target="#carouselExample_{{ post.id }}" data-bs-slide="prev">
                                             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                                             <span class="visually-hidden">Previous</span>
                                         </button>
                                         <button class="carousel-control-next" type="button"
-                                                data-bs-target="#carouselExample" data-bs-slide="next">
+                                                data-bs-target="#carouselExample_{{ post.id }}" data-bs-slide="next">
                                             <span class="carousel-control-next-icon" aria-hidden="true"></span>
                                             <span class="visually-hidden">Next</span>
                                         </button>
@@ -230,31 +233,47 @@
                                     </a>
                                 </div>
 
-                                <div class="post__infos">
+                                <div class="post__infos" style="gap: 0">
                                     <div class="post__likes">
                                         <a href="#" class="post__likes-avatar">
                                             <img src="../static/assets1/default-user.png" alt="User Picture">
                                         </a>
 
-                                        <!--                                    <span>Liked by <a class="post__name&#45;&#45;underline" href="#">user123</a> and <a href="#">73 others</a></span>-->
-                                        <span> {% post_likes_count post.id %} <a class="post__name--underline" href="#">likes</a> <a
-                                                href="#"></a></span>
+                                        <span> {% autoescape off %}
+                                            {% post_likes_count post.id %} {% endautoescape %}</span>
+                                        <span id="post_comment_count_{{ post.id }}">
+                                            <a class="post__name--underline"
+                                               href="#"> {{ post.comments_count }} comment{{ post.comments_count | pluralize }}</a>
+                                            </span>
                                     </div>
 
-                                    <div class="post__description">
-                                        <span>
-                                            <a class="post__name--underline" href="#"><b>@Asadbek</b></a>
-                                            Lorem ipsom Lorem ipsom Lorem ipsom Lorem ipsom Lorem ipsom Lorem ipsom Lorem ipsom Lorem ipsom Lorem ipsom Lorem ipsom
-
+                                    <div class="post__description" id="post_description">
+                                        {% if post.comment_set.last %}
+                                            <span>
+                                            <a class="post__name--underline"
+                                               href="{% url 'profile' post.comment_set.last.user.username %}"><b>@{{ post.comment_set.last.user.username }}</b></a>
+                                            {{ post.comment_set.last.text }}
                                         </span>
-                                        <!--                                    {{post.caption}}-->
+                                        {% endif %}
                                     </div>
-                                    <p style="font-size: 13px;">
-                                        <a href="{{ tag.get_absolute_url }}" style="text-decoration: none;">
-                                            #uzb #inha
-                                        </a>
+                                    <p style="font-size: 13px; margin-bottom: 0">
+                                        {% for tag in post.posthastag_set.all %}
+                                            <a href="{{ tag.get_absolute_url }}" style="text-decoration: none;">
+                                                #{{ tag.tag_id.tag_name }}
+                                            </a>
+                                        {% endfor %}
                                     </p>
-                                    <span class="post__date-time">3 hours ago</span>
+                                    <span class="post__date-time">{% post_time_delta post.created_at %} ago</span>
+                                    <form action="" id="myForm">
+                                        <div class="input-group mt-2">
+                                            <input type="text" id="comment_{{ post.id }}" class="form-control"
+                                                   placeholder="Comment"
+                                                   aria-label="comment" aria-describedby="button-addon2">
+                                            <button class="btn btn-outline-secondary" type="button" id="button-addon2"
+                                                    onclick="sendComment({{ post.id }})"> Send
+                                            </button>
+                                        </div>
+                                    </form>
                                 </div>
                             </div>
                         </article>
@@ -404,4 +423,66 @@
             </div>
         </a>
     </nav>
+
+
+    <script>
+        function sendComment(post_id) {
+            var comment_id = "comment_" + post_id
+            let comment = document.getElementById(comment_id).value;
+            const url = {% url 'add-comment' %};
+            const data = {
+                post_id: post_id,
+                comment: comment
+            };
+            $.ajax({
+                url: url,
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(data),
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken")
+                },
+                success: function (response) {
+                    $('#post_description').empty();
+
+                    var spanElement = `<span "display: block;">
+                                            <a href="">@` + response['user'] + `</a> ` + response['comment'] + `
+                                        </span>`
+
+                    $('#post_description').append(spanElement);
+
+                    var comment_id = "comment_" + response['post_id']
+                    var post_comment_count = "post_comment_count_" + response['post_id']
+                    console.log(post_comment_count)
+                    document.getElementById(comment_id).value = "";
+                    var mySpan = document.getElementById(post_comment_count);
+                    var textContent = mySpan.textContent;
+                    var words = textContent.trim().split(" ");
+                    var number = parseInt(words[0]);
+                    mySpan.textContent = (number + 1).toString() + " comments";
+
+                },
+                error: function (xhr, status, error) {
+                    console.error(xhr.responseText);
+                    console.error(error);
+                }
+            });
+        }
+
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+
 {% endblock content %}
