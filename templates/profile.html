@@ -16,7 +16,7 @@
 
                 <div class="profile-image">
                     {% if user.avatar %}
-                        <img src="{{ user.avatar.url }}" alt="">
+                        <img src="{{ user.avatar.url }}" alt="" >
                     {% else %}
                         <img src="{% static 'default-user.png' %}" alt="">
                     {% endif %}
@@ -25,11 +25,14 @@
                 <div class="profile-user-settings">
 
                     <h1 class="profile-user-name">{{ user.username }}</h1>
-
+                    {% if self_profile %} 
                     <button class="btn profile-edit-btn">Edit Profile</button>
-
                     <button class="btn profile-settings-btn" aria-label="profile settings"><i class="fas fa-cog"
-                                                                                              aria-hidden="true"></i>
+                        aria-hidden="true"></i>
+                    {% else %}
+                    <button class="btn profile-edit-btn" style="background-color: blue; color: white;">Follow</button>
+                    {% endif %}
+
                     </button>
 
                 </div>
@@ -68,13 +71,14 @@
                     <li class="nav-item"><a class="nav-link disabled">TAGGED</a></li>
                 </ul>
             </div>
+            
             <div class="row gallery">
                 {% for post in user.post_set.all %}
-                    <div class="col-4">
+                     
                         <div class="gallery-item" tabindex="0">
                             {% if post.postfilecontent_set.first.type == "img" %}
                                 <img src="{{ post.postfilecontent_set.first.file.url }}"
-                                     class="gallery-image" alt="">
+                                    class="gallery-image" alt="">
                             {% else %}
                                 <video width="320" height="240" controls>
                                     <source src="{{ post.postfilecontent_set.first.file.url }}" type="video/mp4">
@@ -91,16 +95,14 @@
                                     </li>
                                 </ul>
 
-                            </div>
-
-                        </div>
+                            </div> 
                     </div>
                 {% endfor %}
 
             </div>
             <!-- End of gallery -->
 
-            <div class="loader"></div>
+             
 
         </div>
         <!-- End of container -->
