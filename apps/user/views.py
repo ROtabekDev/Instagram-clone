@@ -175,9 +175,9 @@ def unfollow(request, username):
 
 @login_required(login_url='sign-in')
 def remove_follower(request, username):
-    print('nok')
+
     follower = get_object_or_404(CustomUser, username=username)
-    print('olma')
+     
     user_follower = UserFollower.objects.get(following=request.user, follower=follower)
     user_follower.delete()
    
@@ -186,9 +186,9 @@ def remove_follower(request, username):
 
 @login_required(login_url='sign-in')
 def remove_following(request, username):
-    print('anor')
+     
     following = get_object_or_404(CustomUser, username=username)
-    print('uzum')
+    
     user_follower = UserFollower.objects.get(follower=request.user, following=following)
     
     user_follower.delete()
