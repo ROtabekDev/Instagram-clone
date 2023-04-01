@@ -27,12 +27,10 @@
                     <h1 class="profile-user-name">{{ user.username }}</h1>
                     {% if self_profile %} 
                     <button class="btn profile-edit-btn">Edit Profile</button>
-                    <button class="btn profile-settings-btn" aria-label="profile settings"><i class="fas fa-cog"
-                        aria-hidden="true"></i>
                     {% elif user_follow %}
-                    <button class="btn profile-edit-btn">Following</button>
+                    <a href="{% url 'unfollow_user' user.username %}"><button  class="btn profile-edit-btn">Following</button></a>
                     {% else %}
-                    <button class="btn profile-edit-btn" style="background-color: blue; color: white;">Follow</button>
+                    <a href="{% url 'follow_user' user.username %}"> <button class="btn profile-edit-btn" style="background-color: blue; color: white;">Follow</button></a>
                     {% endif %}
 
                     </button>

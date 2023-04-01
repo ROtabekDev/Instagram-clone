@@ -4,7 +4,9 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
+from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView
 
@@ -148,3 +150,24 @@ class MessageView(TemplateView):
     #     context['posts'] = Post.objects.filter(user_id__following__follower=self.request.user).exclude(
     #         user_id=self.request.user)
     #     return context
+
+
+@login_required(login_url='sign-in')
+def follow(request, username):
+
+    following = get_object_or_404(CustomUser, username=username)
+
+    UserFollower.objects.update_or_create(follower=request.user, following=following)
+   
+    return HttpResponseRedirect(reverse('profile', args=[username]))
+
+
+@login_required(login_url='sign-in')
+def unfollow(request, username):
+
+    following = get_object_or_404(CustomUser, username=username)
+
+    user_follow = UserFollower.objects.get(follower=request.user, following=following)
+    user_follow.delete()
+   
+    return HttpResponseRedirect(reverse('profile', args=[username]))
