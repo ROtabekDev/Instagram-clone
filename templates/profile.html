@@ -29,6 +29,8 @@
                     <button class="btn profile-edit-btn">Edit Profile</button>
                     <button class="btn profile-settings-btn" aria-label="profile settings"><i class="fas fa-cog"
                         aria-hidden="true"></i>
+                    {% elif user_follow %}
+                    <button class="btn profile-edit-btn">Following</button>
                     {% else %}
                     <button class="btn profile-edit-btn" style="background-color: blue; color: white;">Follow</button>
                     {% endif %}
@@ -74,16 +76,19 @@
             
             <div class="row gallery">
                 {% for post in user.post_set.all %}
-                     
+                      
+                <a href="{% url 'post-detail' post.id %}">
                         <div class="gallery-item" tabindex="0">
                             {% if post.postfilecontent_set.first.type == "img" %}
+                            
                                 <img src="{{ post.postfilecontent_set.first.file.url }}"
-                                    class="gallery-image" alt="">
+                                    class="gallery-image" alt=""> 
+                               
                             {% else %}
                                 <video width="320" height="240" controls>
                                     <source src="{{ post.postfilecontent_set.first.file.url }}" type="video/mp4">
                                 </video>
-                            {% endif %}
+                            {% endif %} 
                             <div class="gallery-item-info">
 
                                 <ul>
@@ -95,8 +100,9 @@
                                     </li>
                                 </ul>
 
-                            </div> 
-                    </div>
+                            </div>  
+                        </div>
+                        </a>
                 {% endfor %}
 
             </div>
@@ -122,7 +128,7 @@
                         <div class="side-menu__suggestions-content">
                             {% for follower in user.following.all %}
                                 <div class="side-menu__suggestion">
-                                    <a href="" class="side-menu__suggestion-avatar">
+                                    <a href="{% url 'profile' follower.follower.username %}" class="side-menu__suggestion-avatar">
                                         {% if follower.follower.avatar %}
                                             <img src="{{ follower.follower.avatar.url }}" alt="User Picture">
                                         {% else %}
@@ -131,8 +137,8 @@
                                     </a>
 
                                     <div class="side-menu__suggestion-info">
-                                        <a href="">{{ follower.follower.full_name }}</a>
-                                        <span>@{{ follower.follower.username }}</span>
+                                        <a href="{% url 'profile' follower.follower.username %}">{{ follower.follower.full_name }}</a>
+                                        <a href="{% url 'profile' follower.following.username %}"><span>@{{ follower.follower.username }}</span></a>
                                     </div>
 
                                     <a href="" class="side-menu__suggestion-button">Remove</a>
@@ -161,7 +167,7 @@
                         <div class="side-menu__suggestions-content">
                             {% for follower in user.follower.all %}
                                 <div class="side-menu__suggestion">
-                                    <a href="" class="side-menu__suggestion-avatar">
+                                    <a href="{% url 'profile' follower.following.username %}" class="side-menu__suggestion-avatar">
                                         {% if follower.following.avatar %}
                                             <img src="{{ follower.following.avatar.url }}" alt="User Picture">
                                         {% else %}
@@ -170,8 +176,8 @@
                                     </a>
 
                                     <div class="side-menu__suggestion-info">
-                                        <a href="">{{ follower.following.full_name }}</a>
-                                        <span>@{{ follower.following.username }}</span>
+                                        <a href="{% url 'profile' follower.following.username %}">{{ follower.following.full_name }}</a>
+                                        <a href="{% url 'profile' follower.following.username %}"><span>@{{ follower.following.username }}</span></a>
                                     </div>
 
                                     <a href="" class="side-menu__suggestion-button">Remove</a>

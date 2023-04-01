@@ -9,7 +9,7 @@ from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView
 
 from apps.post.models import Post
-from apps.user.models import CustomUser
+from apps.user.models import CustomUser, UserFollower
 from apps.user.utils import phone_regex_pattern, email_regex_pattern
 from django.utils.crypto import get_random_string
 from django.core.cache import cache
@@ -128,11 +128,13 @@ def sign_out(request):
 @login_required(redirect_field_name='next')
 def profile(request, username):
     user = get_object_or_404(CustomUser, username=username),
-    self_profile= True if user[0]==request.user else False  
+    self_profile= True if user[0]==request.user else False
+    user_follow = UserFollower.objects.filter(follower=request.user, following=user[0]).exists() 
     
     context = {
         'user': get_object_or_404(CustomUser, username=username),
         'self_profile': self_profile,
+        'user_follow': user_follow,
     }
     return render(request, 'profile.html', context)
 
