@@ -72,3 +72,39 @@ class HashTagFollower(BaseModel):
     class Meta:
         verbose_name = "HashTagFollower"
         verbose_name_plural = "HashTagFollowers"
+
+
+class Chat(BaseModel):
+    name = models.CharField(max_length=200)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Chat"
+        verbose_name_plural = "Chats"
+
+
+class Participant(BaseModel):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.user.username
+
+    class Meta:
+        verbose_name = "Participant"
+        verbose_name_plural = "Participants"
+
+
+class Message(BaseModel):
+    chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name='messages')
+    sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    msg = models.TextField()
+
+    def __str__(self):
+        return self.sender.username
+
+    class Meta:
+        verbose_name = "Message"
+        verbose_name_plural = "Messages"
