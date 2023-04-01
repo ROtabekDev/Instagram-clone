@@ -302,7 +302,7 @@
                                     <a href="{% url 'profile' user.username %}"><span>@{{ user.username }}</span></a>
                                 </div>
     
-                                <a href="" class="side-menu__suggestion-button">Follow</a>
+                                <a href="{% url 'profile' user.username %}" class="side-menu__suggestion-button">Follow</a>
                             </div>  
                         </div>
                         {% endfor %} 
@@ -347,7 +347,7 @@
                                 <a href="{% url 'profile' user.username %}"><span>@{{ user.username }}</span></a>
                             </div>
 
-                            <a href="" class="side-menu__suggestion-button">Follow</a>
+                            <a href="{% url 'profile' user.username %}" class="side-menu__suggestion-button">Follow</a>
                         </div>  
                     </div>
                     {% endfor %}
