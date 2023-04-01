@@ -136,10 +136,10 @@
 
                                     <div class="side-menu__suggestion-info">
                                         <a href="{% url 'profile' follower.follower.username %}">{{ follower.follower.full_name }}</a>
-                                        <a href="{% url 'profile' follower.following.username %}"><span>@{{ follower.follower.username }}</span></a>
+                                        <a href="{% url 'profile' follower.follower.username %}"><span>@{{ follower.follower.username }}</span></a>
                                     </div>
 
-                                    <a href="" class="side-menu__suggestion-button">Remove</a>
+                                    <a href="{% url 'remove_follower' follower.follower.username %}" class="side-menu__suggestion-button">Remove</a>
                                 </div>
                             {% endfor %}
 
@@ -178,7 +178,7 @@
                                         <a href="{% url 'profile' follower.following.username %}"><span>@{{ follower.following.username }}</span></a>
                                     </div>
 
-                                    <a href="" class="side-menu__suggestion-button">Remove</a>
+                                    <a href="{% url 'remove_following' follower.following.username %}" class="side-menu__suggestion-button">Remove</a>
                                 </div>
                             {% endfor %}
 
