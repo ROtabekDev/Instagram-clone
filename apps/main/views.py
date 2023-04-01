@@ -5,8 +5,12 @@ from django.http import JsonResponse
 
 from apps.main.models import Comment, Notification
 from apps.post.models import Post
+ 
+from apps.user.models import UserFollower, CustomUser
+ 
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
+ 
 
 
 @method_decorator(login_required, name='dispatch')
@@ -15,8 +19,16 @@ class HomeView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['posts'] = Post.objects.filter(user_id__following__follower=self.request.user).exclude(
+        posts = Post.objects.filter(user_id__following__follower=self.request.user).exclude(
             user_id=self.request.user)
+        context['posts'] = posts 
+        
+        users = CustomUser.objects.all().exclude(following__follower=self.request.user).exclude(
+            id=self.request.user.id)
+        context['users'] = users
+
+        context['no_posts'] = posts.exists() 
+
         return context
 
 

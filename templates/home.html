@@ -170,13 +170,15 @@
                                             {% for pst in post.postfilecontent_set.all %}
                                                 <div class="carousel-item {% if post.postfilecontent_set.first == pst %} active {% endif %}">
                                                     {% if pst.type == "img" %}
-                                                        <img src="{{ pst.file.url }}"
-                                                             class="gallery-image d-block w-100" alt="">
+                                                        <a href="{% url 'post-detail' post.pk %}"> <img src="{{ pst.file.url }}" class="gallery-image d-block w-100" alt=""> </a> 
+                                        
                                                     {% else %}
+                                                     <a href="{% url 'post-detail' post.pk %}">
                                                         <video class="d-block w-100" controls>
                                                             <source src="{{ pst.file.url }}"
                                                                     type="video/mp4">
                                                         </video>
+                                                     </a>
                                                     {% endif %}
                                                 </div>
                                             {% endfor %}
@@ -278,35 +280,47 @@
                             </div>
                         </article>
                     {% endfor %}
+                    {% if not no_posts %}
                     <div class="side-menu__suggestions-content" style="padding: 0 40px;">
                         <div class="side-menu__suggestions-header">
                             <h2>Suggestions for You</h2>
                             <button>See All</button>
                         </div>
-                        <div class="side-menu__suggestion">
-                            <a href="" class="side-menu__suggestion-avatar">
-                                <img src="../static/assets2/images/5.jpg" alt="User Picture">
-                            </a>
-
-                            <div class="side-menu__suggestion-info">
-                                <a href="">Nabiyev Fazliddin</a>
-                                <a href=""><span>@fnabiyev</span></a>
-
-                            </div>
-
-                            <a href="" class="side-menu__suggestion-button">Follow</a>
-
+                        {% for user in users %}
+                        <div class="side-menu__suggestions-content">
+                            <div class="side-menu__suggestion">
+                                <a href="{% url 'profile' user.username %}" class="side-menu__suggestion-avatar">
+                                    {% if user.avatar %}
+                                    <img src="{{ user.avatar.url }}" alt="User Picture">
+                                    {% else %}
+                                        <img src="{% static 'default-user.png' %}" alt="User Picture">
+                                    {% endif %}
+                                </a>
+    
+                                <div class="side-menu__suggestion-info">
+                                    <a href="{% url 'profile' user.username %}">{{ user.full_name }}</a>
+                                    <a href="{% url 'profile' user.username %}"><span>@{{ user.username }}</span></a>
+                                </div>
+    
+                                <a href="" class="side-menu__suggestion-button">Follow</a>
+                            </div>  
                         </div>
+                        {% endfor %} 
                     </div>
+                    {% endif %}
                 </div>
             </div>
             <section class="side-menu">
                 <div class="side-menu__user-profile">
-                    <a href="https://github.com/leocosta1" target="_blank" class="side-menu__user-avatar">
-                        <img src="../static/assets2/images/6.jpg" alt="User Picture">
+                    <a href="{{ request.user.username }}/" target="_blank" class="side-menu__user-avatar">
+                        {% if request.user.avatar %}
+                        <img src="{{ request.user.avatar.url }}" alt="User Picture">
+                        {% else %}
+                            <img src="{% static 'default-user.png' %}" alt="User Picture">
+                        {% endif %}
                     </a>
                     <div class="side-menu__user-info">
-                        <a href="{{ request.user.username }}/">Nabiyev Fazliddin</a>
+                        <a href="{{ request.user.username }}/">{{ request.user.full_name }}</a>
                         <span>@{{ request.user.username }}</span>
                     </div>
                     <a class="side-menu__user-button" href="{{ request.user.username }}/">View Profile</a>
@@ -317,57 +331,26 @@
                         <h2>Suggestions for You</h2>
                         <button>See All</button>
                     </div>
+                    {% for user in users %}
                     <div class="side-menu__suggestions-content">
                         <div class="side-menu__suggestion">
-                            <a href="" class="side-menu__suggestion-avatar">
-                                <img src="../static/assets2/images/1.jpg" alt="User Picture">
+                            <a href="{% url 'profile' user.username %}" class="side-menu__suggestion-avatar">
+                                {% if user.avatar %}
+                                <img src="{{ user.avatar.url }}" alt="User Picture">
+                                {% else %}
+                                    <img src="{% static 'default-user.png' %}" alt="User Picture">
+                                {% endif %}
                             </a>
 
                             <div class="side-menu__suggestion-info">
-                                <a href="">Test user</a>
-                                <span>@username1</span>
+                                <a href="{% url 'profile' user.username %}">{{ user.full_name }}</a>
+                                <a href="{% url 'profile' user.username %}"><span>@{{ user.username }}</span></a>
                             </div>
 
                             <a href="" class="side-menu__suggestion-button">Follow</a>
-                        </div>
-                        <div class="side-menu__suggestion">
-                            <a href="" class="side-menu__suggestion-avatar">
-                                <img src="../static/assets2/images/2.jpg" alt="User Picture">
-                            </a>
-
-                            <div class="side-menu__suggestion-info">
-                                <a href="">Test user</a>
-                                <span>@username1</span>
-                            </div>
-
-                            <a href="" class="side-menu__suggestion-button">Follow</a>
-                        </div>
-                        <div class="side-menu__suggestion">
-                            <a href="" class="side-menu__suggestion-avatar">
-                                <img src="../static/assets2/images/3.jpg" alt="User Picture">
-                            </a>
-
-                            <div class="side-menu__suggestion-info">
-                                <a href="">Test user</a>
-                                <span>@username1</span>
-                            </div>
-
-                            <a href="" class="side-menu__suggestion-button">Follow</a>
-                        </div>
-                        <div class="side-menu__suggestion">
-                            <a href="" class="side-menu__suggestion-avatar">
-                                <img src="../static/assets2/images/4.jpg" alt="User Picture">
-                            </a>
-
-                            <div class="side-menu__suggestion-info">
-                                <a href="">Test user</a>
-                                <span>@username1</span>
-                            </div>
-
-                            <a href="" class="side-menu__suggestion-button">Follow</a>
-                        </div>
-
+                        </div>  
                     </div>
+                    {% endfor %}
                 </div>
             </section>
         </section>
