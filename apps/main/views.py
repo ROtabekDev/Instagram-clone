@@ -56,6 +56,11 @@ def ShowNotification(request):
 
     context = {
         'notifications': notifications,
-
     }
+    notifications = Notification.objects.filter(user_id=user)
+    
+    for notification in notifications:
+        notification.viewed = True
+        notification.save()
+
     return render(request, 'show-notification.html', context)
