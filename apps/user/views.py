@@ -1,5 +1,6 @@
 import re
 
+from django.contrib.contenttypes.models import ContentType
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -11,6 +12,7 @@ from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView
 
 from apps.post.models import Post
+from apps.main.models import Like
 from apps.user.models import CustomUser, UserFollower
 from apps.user.utils import phone_regex_pattern, email_regex_pattern
 from django.utils.crypto import get_random_string
@@ -159,7 +161,8 @@ def follow(request, username):
 
     UserFollower.objects.update_or_create(follower=request.user, following=following)
    
-    return HttpResponseRedirect(reverse('profile', args=[username]))
+    return redirect(request.META.get('HTTP_REFERER'))
+    # return HttpResponseRedirect(reverse('profile', args=[username]))
 
 
 @login_required(login_url='sign-in')
@@ -170,7 +173,8 @@ def unfollow(request, username):
     user_follow = UserFollower.objects.get(follower=request.user, following=following)
     user_follow.delete()
    
-    return HttpResponseRedirect(reverse('profile', args=[username]))
+    return redirect(request.META.get('HTTP_REFERER'))
+    # return HttpResponseRedirect(reverse('profile', args=[username]))
 
 
 @login_required(login_url='sign-in')
@@ -194,3 +198,22 @@ def remove_following(request, username):
     user_follower.delete()
    
     return HttpResponseRedirect(reverse('profile', args=[request.user.username]))
+
+
+@login_required(login_url='sign-in')
+def create_like(request, post_id):
+    content_type = ContentType.objects.get(model='post')
+    post = content_type.model_class().objects.get(id=post_id) 
+    Like.objects.update_or_create(user_id=request.user, content_type=content_type, object_id=post.id)
+   
+    return redirect(request.META.get('HTTP_REFERER')) 
+
+
+@login_required(login_url='sign-in')
+def remove_like(request, post_id):
+    content_type = ContentType.objects.get(model='post')
+    post = content_type.model_class().objects.get(id=post_id) 
+    like = Like.objects.get(user_id=request.user, content_type=content_type, object_id=post.id) 
+    like.delete()
+   
+    return redirect(request.META.get('HTTP_REFERER')) 
