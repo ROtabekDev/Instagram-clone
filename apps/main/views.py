@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.views.generic import TemplateView
 from django.http import JsonResponse
 
-from apps.main.models import Comment, Notification
+from apps.main.models import Comment, Notification, Like
 from apps.post.models import Post
  
 from apps.user.models import UserFollower, CustomUser
@@ -26,7 +26,12 @@ class HomeView(TemplateView):
         users = CustomUser.objects.all().exclude(following__follower=self.request.user).exclude(
             id=self.request.user.id)
         context['users'] = users
-
+        likes = Like.objects.filter(user_id=self.request.user).filter(content_type__model='post').values_list('object_id', flat=True).order_by('object_id')
+        if likes.exists():
+            context['like_indexes'] = list(likes)
+        else:
+            context['like_indexes'] = []
+ 
         context['no_posts'] = posts.exists() 
 
         return context
@@ -44,7 +49,7 @@ def add_comment(request):
     }
     return JsonResponse(data)
 
-
+@login_required(login_url='sign-in')
 def ShowNotification(request):
     user = request.user
     notifications = Notification.objects.filter(user_id=user).order_by('-created_at')

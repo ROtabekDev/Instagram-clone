@@ -50,6 +50,7 @@ def PostDetail(request, post_id):
     tags = PostHastag.objects.filter(post_id=post)
     comments = Comment.objects.filter(post_id=post).order_by('-created_at')
 
+
     if request.method == "POST":
         form = NewCommentForm(request.POST)
         if form.is_valid():
@@ -61,12 +62,19 @@ def PostDetail(request, post_id):
     else:
         form = NewCommentForm()
 
+    likes = Like.objects.filter(user_id=request.user).filter(content_type__model='post').values_list('object_id', flat=True).order_by('object_id')
+    if likes.exists():
+        like_indexes = list(likes)
+    else:
+        like_indexes = []
+
     context = {
         'post': post,
         'like_count': like_count,
         'tags': tags,
         'form': form,
-        'comments': comments
+        'comments': comments,
+        'like_indexes': like_indexes
     }
 
     return render(request, 'post_detail.html', context)
