@@ -137,7 +137,7 @@ class MessageView(TemplateView):
     def get(self, request, *args, **kwargs):
 
         context = self.get_context_data(**kwargs)
-        context['participants'] = Participant.objects.filter(~Q(user=self.request.user), chat__participant__user=self.request.user).annotate(filter=Q(chat__messages__is_read=False))
+        context['participants'] = Participant.objects.filter(~Q(user=self.request.user), chat__participant__user=self.request.user)
         context['all_users'] = CustomUser.objects.all().exclude(id=self.request.user.id)
         try:
             name = kwargs.get('name')
