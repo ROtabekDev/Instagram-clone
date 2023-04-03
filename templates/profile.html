@@ -29,8 +29,10 @@
                 <div class="profile-user-settings">
 
                     <h1 class="profile-user-name">{{ user.username }}</h1>
-                    {% if self_profile %} 
-                    <button class="btn profile-edit-btn">Edit Profile</button>
+                    {% if self_profile %}
+                    <a href="{% url 'edit-profile' %}">
+                        <button class="btn profile-edit-btn">Edit Profile</button>
+                    </a>
                     <button type="button" class="btn btn-info btn-lg" type="button" data-toggle="modal" data-target="#exampleModal"  style="display:inline-block; border-radius: 5px; background-color: #5bc0de; color: #fff; font-size: 16px; text-decoration: none; padding: 2px 12px;">
                         <span class="glyphicon glyphicon-log-out"></span> Log out
                       </button>

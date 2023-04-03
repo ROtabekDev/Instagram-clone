@@ -18,6 +18,9 @@ from apps.user.utils import phone_regex_pattern, email_regex_pattern
 from django.utils.crypto import get_random_string
 from django.core.cache import cache
 
+from django.shortcuts import render
+from .forms import EditProfileForm
+
 
 def sign_in(request):
     if request.method == "POST":
@@ -217,3 +220,17 @@ def remove_like(request, post_id):
     like.delete()
    
     return redirect(request.META.get('HTTP_REFERER')) 
+
+@login_required(login_url='sign-in')
+def edit_profile(request):
+    user = request.user
+    if request.method == 'POST':
+        form = EditProfileForm(request.POST, request.FILES, instance=user)
+        if form.is_valid():
+            form.save()
+            # Redirect the user to their profile page
+            return HttpResponseRedirect(reverse('profile', args=[request.user.username]))
+    else:
+        form = EditProfileForm(instance=user)
+
+    return render(request, 'edit_profile.html', {'form': form})
