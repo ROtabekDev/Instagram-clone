@@ -6,14 +6,15 @@ email_regex_pattern = r'^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$'
 
 
 class PhoneNumberBackend(BaseBackend):
-    def authenticate(self, request, phone_number=None, password=None, **kwargs):
+    def authenticate(self, request, username=None, password=None, **kwargs):
         UserModel = get_user_model()
-        users = UserModel.objects.filter(phone_number=phone_number)
-        if users.exists():
-            for user in users:
-                if user.check_password(password):
-                    return user
-        return None
+        try:
+            user = UserModel.objects.get(phone_number=username)
+        except UserModel.DoesNotExist:
+            return None
+        if user.check_password(password):
+            return user
+
     def get_user(self, user_id):
         UserModel = get_user_model()
         try:
@@ -24,14 +25,14 @@ class PhoneNumberBackend(BaseBackend):
 
 class EmailBackend(BaseBackend):
 
-    def authenticate(self, request, email=None, password=None, **kwargs):
+    def authenticate(self, request, username=None, password=None, **kwargs):
         UserModel = get_user_model()
-        users = UserModel.objects.filter(email=email)
-        if users.exists():
-            for user in users:
-                if user.check_password(password):
-                    return user
-        return None
+        try:
+            user = UserModel.objects.get(email=username)
+        except UserModel.DoesNotExist:
+            return None
+        if user.check_password(password):
+            return user
 
     def get_user(self, user_id):
         UserModel = get_user_model()
