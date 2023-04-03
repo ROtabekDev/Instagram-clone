@@ -15,6 +15,7 @@ urlpatterns = [
     path("sms-code/", sms_code, name='sms-code'),
 
     path("<str:username>/", profile, name='profile'),
+    path('<str:username>/saved/', profile, name='profile-favourite'),
     
     path("follow/<str:username>/", follow, name='follow_user'),
     path("unfollow/<str:username>/", unfollow, name='unfollow_user'),
