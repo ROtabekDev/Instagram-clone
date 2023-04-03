@@ -114,7 +114,7 @@ class SpecifiedUser(BaseModel):
 class SavedPost(BaseModel): 
     """Saqlangan postlar"""
 
-    user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='saved_posts')
     post_id = models.ForeignKey(Post, on_delete=models.CASCADE)
 
     def __str__(self):

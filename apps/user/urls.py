@@ -3,7 +3,8 @@ from .views import (
     sign_in, sign_up, sign_out, profile, follow, unfollow,
     remove_follower, remove_following, MessageView, sms_code,
     create_like, remove_like, edit_profile, create_chat
-)
+    )
+
 
 urlpatterns = [
     path("message/", MessageView.as_view(), name='message'),
@@ -15,6 +16,7 @@ urlpatterns = [
     path("sms-code/", sms_code, name='sms-code'),
 
     path("<str:username>/", profile, name='profile'),
+    path('<str:username>/saved/', profile, name='profile-favourite'),
     
     path("follow/<str:username>/", follow, name='follow_user'),
     path("unfollow/<str:username>/", unfollow, name='unfollow_user'),
@@ -27,3 +29,4 @@ urlpatterns = [
 
     path('profile/edit/', edit_profile, name="edit-profile"),
 ]
+

@@ -14,7 +14,7 @@ from django.views.generic import TemplateView
 from apps.user.models import CustomUser, Participant, Chat, Message
 from django.http import HttpResponseRedirect
 from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse
+from django.urls import resolve, reverse
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView
 
@@ -174,14 +174,23 @@ def sign_out(request):
 
 @login_required(redirect_field_name='next')
 def profile(request, username):
-    user = get_object_or_404(CustomUser, username=username),
-    self_profile= True if user[0]==request.user else False
-    user_follow = UserFollower.objects.filter(follower=request.user, following=user[0]).exists() 
-    
+    user = get_object_or_404(CustomUser, username=username)
+     
+    self_profile= True if user==request.user else False
+    user_follow = UserFollower.objects.filter(follower=request.user, following=user).exists()
+    url_name = resolve(request.path).url_name
+    posts = Post.objects.filter(user_id=user).order_by('-created_at')
+
+    if url_name == 'profile':
+        posts = Post.objects.filter(user_id=user).order_by('-created_at')
+    else:
+        posts = user.saved_posts.all()
+     
     context = {
         'user': get_object_or_404(CustomUser, username=username),
         'self_profile': self_profile,
         'user_follow': user_follow,
+        'posts': posts
     }
     return render(request, 'profile.html', context)
 
