@@ -1,5 +1,6 @@
 import re
 
+from django.contrib.contenttypes.models import ContentType
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -11,8 +12,20 @@ from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView
 
 from apps.user.models import CustomUser, Participant, Chat, Message
+from django.http import HttpResponseRedirect
+from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
+from django.utils.decorators import method_decorator
+from django.views.generic import TemplateView
+
+from apps.post.models import Post
+from apps.main.models import Like
+from apps.user.models import CustomUser, UserFollower
 from apps.user.utils import phone_regex_pattern, email_regex_pattern
 from django.db.models import Q, Count
+
+from django.shortcuts import render
+from .forms import EditProfileForm
 
 
 def sign_in(request):
@@ -124,8 +137,14 @@ def sign_out(request):
 
 @login_required(redirect_field_name='next')
 def profile(request, username):
+    user = get_object_or_404(CustomUser, username=username),
+    self_profile= True if user[0]==request.user else False
+    user_follow = UserFollower.objects.filter(follower=request.user, following=user[0]).exists() 
+    
     context = {
-        'user': get_object_or_404(CustomUser, username=username)
+        'user': get_object_or_404(CustomUser, username=username),
+        'self_profile': self_profile,
+        'user_follow': user_follow,
     }
     return render(request, 'profile.html', context)
 
@@ -163,3 +182,88 @@ def create_chat(request, user_id):
         Participant.objects.create(user=request.user, chat=chat)
 
         return redirect(f'/message/{chat.name}')
+        
+    # def get_context_data(self, **kwargs):
+    #     context = super().get_context_data(**kwargs)
+    #     context['posts'] = Post.objects.filter(user_id__following__follower=self.request.user).exclude(
+    #         user_id=self.request.user)
+    #     return context
+
+
+@login_required(login_url='sign-in')
+def follow(request, username):
+
+    following = get_object_or_404(CustomUser, username=username)
+
+    UserFollower.objects.update_or_create(follower=request.user, following=following)
+   
+    return redirect(request.META.get('HTTP_REFERER'))
+    # return HttpResponseRedirect(reverse('profile', args=[username]))
+
+
+@login_required(login_url='sign-in')
+def unfollow(request, username):
+
+    following = get_object_or_404(CustomUser, username=username)
+
+    user_follow = UserFollower.objects.get(follower=request.user, following=following)
+    user_follow.delete()
+   
+    return redirect(request.META.get('HTTP_REFERER'))
+    # return HttpResponseRedirect(reverse('profile', args=[username]))
+
+
+@login_required(login_url='sign-in')
+def remove_follower(request, username):
+
+    follower = get_object_or_404(CustomUser, username=username)
+     
+    user_follower = UserFollower.objects.get(following=request.user, follower=follower)
+    user_follower.delete()
+   
+    return HttpResponseRedirect(reverse('profile', args=[request.user.username]))
+
+
+@login_required(login_url='sign-in')
+def remove_following(request, username):
+     
+    following = get_object_or_404(CustomUser, username=username)
+    
+    user_follower = UserFollower.objects.get(follower=request.user, following=following)
+    
+    user_follower.delete()
+   
+    return HttpResponseRedirect(reverse('profile', args=[request.user.username]))
+
+
+@login_required(login_url='sign-in')
+def create_like(request, post_id):
+    content_type = ContentType.objects.get(model='post')
+    post = content_type.model_class().objects.get(id=post_id) 
+    Like.objects.update_or_create(user_id=request.user, content_type=content_type, object_id=post.id)
+   
+    return redirect(request.META.get('HTTP_REFERER')) 
+
+
+@login_required(login_url='sign-in')
+def remove_like(request, post_id):
+    content_type = ContentType.objects.get(model='post')
+    post = content_type.model_class().objects.get(id=post_id) 
+    like = Like.objects.get(user_id=request.user, content_type=content_type, object_id=post.id) 
+    like.delete()
+   
+    return redirect(request.META.get('HTTP_REFERER')) 
+
+@login_required(login_url='sign-in')
+def edit_profile(request):
+    user = request.user
+    if request.method == 'POST':
+        form = EditProfileForm(request.POST, request.FILES, instance=user)
+        if form.is_valid():
+            form.save()
+            # Redirect the user to their profile page
+            return HttpResponseRedirect(reverse('profile', args=[request.user.username]))
+    else:
+        form = EditProfileForm(instance=user)
+
+    return render(request, 'edit_profile.html', {'form': form})

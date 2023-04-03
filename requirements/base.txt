@@ -7,3 +7,6 @@ django-phonenumber-field==7.0.2
 sorl-thumbnail==12.9.0
 django-phonenumbers==1.0.1
 django-crispy-forms==2.0
+channels==4.0.0
+websocket-client==1.5.1
+daphne==4.0.0
