@@ -69,17 +69,12 @@
                                         <div class="col-sm-8 col-xs-8 sideBar-name">
                                             <span class="name-meta">{{ participant.user.full_name }}</span>
                                         </div>
-{#                                        {% if participant.chat.un_read > 0 %}#}
-{#                                            <div class="col-sm-4 col-xs-4 pull-right sideBar-time">#}
-{#                                                <span class="badge"#}
-{#                                                      style="display: unset; background-color: green">{{ participant.chat.un_read }}</span>#}
-{#                                            </div>#}
-{#                                        {% endif %}#}
-
-                                        <div class="col-sm-4 col-xs-4 pull-right sideBar-time">
+                                        {% if participant.chat.un_read > 0 %}
+                                            <div class="col-sm-4 col-xs-4 pull-right sideBar-time">
                                                 <span class="badge"
-                                                      style="display: unset; background-color: green">{{ participant.unread_count }}</span>
-                                        </div>
+                                                      style="display: unset; background-color: green">{{ participant.chat.un_read }}</span>
+                                            </div>
+                                        {% endif %}
 
                                     </div>
                                 </div>
@@ -151,8 +146,7 @@
                         </div>
                     </div>
                     <div class="col-sm-8 col-xs-7 heading-name">
-                        <a class="heading-name-meta">{{ partner.user.full_name }}
-                        </a>
+                        <a class="heading-name-meta">{{ partner.user.full_name }} <span id="direct_user"></span></a>
                         <span class="heading-online">Online</span>
                     </div>
                     <div class="col-sm-1 col-xs-1  heading-dot pull-right">
@@ -176,8 +170,11 @@
                                         <div class="message-text">
                                             {{ message.msg }}
                                         </div>
+
                                         <span class="message-time pull-right">
-                                            {{ message.created_at }}
+                                            {{ message.created_at }}&nbsp;&nbsp;&nbsp;&nbsp; <i class="fa fa-check"></i>
+                                            {% if message.is_read %}
+                                                <i class="fa fa-check"></i>{% endif %}
                                         </span>
                                     </div>
                                 </div>
@@ -230,39 +227,57 @@
     chatSocket.onmessage = function (e) {
         const data = JSON.parse(e.data);
         doom = document.querySelector('#chat-log');
-        if (data.user_id == {{ user.id }}) {
-            message_class = `<div class="col-sm-12 message-main-sender">
-                                    <div class="sender">
-                                        <div class="message-text">
-                                            ` + data.message + `
+        console.log(data.type);
+        if (data.type == 'chat_message') {
+            if (data.user_id == {{ user.id }}) {
+                message_class = `<div class="col-sm-12 message-main-sender">
+                                        <div class="sender">
+                                            <div class="message-text">
+                                                ` + data.message + `
+                                            </div>
+                                            <span class="message-time pull-right">
+                                                ` + data.created_at + ` &nbsp;&nbsp;&nbsp;&nbsp; <i class="fa fa-check"></i>
+                                            </span>
                                         </div>
-                                        <span class="message-time pull-right">
-                                            ` + data.created_at + `
-                                        </span>
-                                    </div>
-                                </div>`
+                                    </div>`
+            } else {
+                message_class = `<div class="col-sm-12 message-main-receiver">
+                                        <div class="receiver">
+                                            <div class="message-text">
+                                                ` + data.message + `
+                                            </div>
+                                            <span class="message-time pull-right">
+                                                ` + data.created_at + `
+                                            </span>
+                                        </div>
+                                    </div>`
+            }
+
+            var newMessage = document.createElement('div');
+
+            // set the innerHTML of the new element to the HTML code in message_class
+            newMessage.innerHTML = message_class;
+
+            // append the new element to the doom element
+            doom.appendChild(newMessage);
         } else {
-            message_class = `<div class="col-sm-12 message-main-receiver">
-                                    <div class="receiver">
-                                        <div class="message-text">
-                                            ` + data.message + `
-                                        </div>
-                                        <span class="message-time pull-right">
-                                            ` + data.created_at + `
-                                        </span>
-                                    </div>
-                                </div>`
+            const span = document.getElementById('direct_user');
+            console.log({{partner.user.id}});
+            console.log({{user.id}});
+            console.log({{data.user_id}});
+            console.log(data.message)
+            if (({{ chat.id }}==data.chat_id) && {{ user.id }} != data.user_id){
+                if (data.message == "typing"){
+                    span.textContent = data.message;
+                }else{
+                    span.innerHTML = data.message;
+                }
+            }
         }
-        var newMessage = document.createElement('div');
-
-        // set the innerHTML of the new element to the HTML code in message_class
-        newMessage.innerHTML = message_class;
-
-        // append the new element to the doom element
-        doom.appendChild(newMessage);
 
         var conversationDiv = document.getElementById("conversation");
         conversationDiv.scrollTop = conversationDiv.scrollHeight;
+        document.querySelector('#chat-message-input').focus();
     };
 
     var conversationDiv1 = document.getElementById("conversation");
@@ -284,12 +299,38 @@
         const messageInputDom = document.querySelector('#chat-message-input');
         const message = messageInputDom.value;
         chatSocket.send(JSON.stringify({
+            'type': 'chat_message',
             'chat_id': {{ chat.id }},
             'user_id': {{ user.id }},
             'message': message
         }));
         messageInputDom.value = '';
     };
+    const input = document.getElementById('chat-message-input');
+
+    let timer;
+
+    input.addEventListener('input', () => {
+        console.log('User is typing');
+        chatSocket.send(JSON.stringify({
+            'type': 'get_typing',
+            'message': 'is typing',
+            'chat_id': {{ chat.id }},
+            'user_id': {{ user.id }}
+        }));
+        clearTimeout(timer);
+        timer = setTimeout(() => {
+            console.log('User has finished typing');
+            // Your code here
+
+            chatSocket.send(JSON.stringify({
+                'type': 'get_typing',
+                'message': '',
+                'chat_id': {{ chat.id }},
+                'user_id': {{ user.id }}
+            }));
+        }, 1000); // Set the time interval to 1 second
+    });
 </script>
 </body>
 </html>
