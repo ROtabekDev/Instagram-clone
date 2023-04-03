@@ -4,15 +4,15 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
+from django.core.cache import cache
 from django.shortcuts import render, redirect, get_object_or_404
+from django.utils.crypto import get_random_string
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView
 
-from apps.post.models import Post
-from apps.user.models import CustomUser
+from apps.user.models import CustomUser, Participant, Chat, Message
 from apps.user.utils import phone_regex_pattern, email_regex_pattern
-from django.utils.crypto import get_random_string
-from django.core.cache import cache
+from django.db.models import Q, Count
 
 
 def sign_in(request):
@@ -85,17 +85,15 @@ def sign_up(request):
                 messages.error(request, f'Enter SMS code')
             messages.error(request, f'{user} profile successfully created!')
 
-            return render(request, 'sms-code.html', {'code': code })
+            return render(request, 'sms-code.html', {'code': code})
     return render(request, 'sign-up.html')
 
 
 def sms_code(request):
     if request.method == "POST":
-        print('post keldi')
         r = request.POST
         code = r['num1'] + r['num2'] + r['num3'] + r['num4'] + r['num5']
         user = cache.get('user')
-        print(user)
         # print(cache.get('session'), r['session'])
         # print(cache.get('code'), code)
         if cache.get('session') == r['session'] and cache.get('code') == code:
@@ -106,7 +104,6 @@ def sms_code(request):
             elif re.match(email_regex_pattern, user['phone_or_email']):
                 user = CustomUser.objects.create(username=user['username'], full_name=user['full_name'],
                                                  email=user['phone_or_email'], password=make_password(user['password']))
-            print(user)
             return redirect('home')
 
         else:
@@ -137,8 +134,32 @@ def profile(request, username):
 class MessageView(TemplateView):
     template_name = "message.html"
 
-    # def get_context_data(self, **kwargs):
-    #     context = super().get_context_data(**kwargs)
-    #     context['posts'] = Post.objects.filter(user_id__following__follower=self.request.user).exclude(
-    #         user_id=self.request.user)
-    #     return context
+    def get(self, request, *args, **kwargs):
+
+        context = self.get_context_data(**kwargs)
+        context['participants'] = Participant.objects.filter(~Q(user=self.request.user), chat__participant__user=self.request.user).annotate(filter=Q(chat__messages__is_read=False))
+        context['all_users'] = CustomUser.objects.all().exclude(id=self.request.user.id)
+        try:
+            name = kwargs.get('name')
+            chat = get_object_or_404(Chat, name=name)
+            context['chat'] = chat
+            context['partner'] = Participant.objects.filter(chat=chat).exclude(user=self.request.user).first()
+            messages = chat.messages.all().filter(~Q(sender=self.request.user), is_read=False)
+            for message in messages:
+                message.is_read = True
+                message.save()
+        except Exception as e:
+            pass
+        return self.render_to_response(context)
+
+
+def create_chat(request, user_id):
+    chat = Chat.objects.filter(participant__user=request.user).filter(participant__user__id=user_id).distinct()
+    if chat.exists():
+        return redirect(f'/message/{chat.first().name}')
+    else:
+        chat = Chat.objects.create()
+        Participant.objects.create(user_id=user_id, chat=chat)
+        Participant.objects.create(user=request.user, chat=chat)
+
+        return redirect(f'/message/{chat.name}')

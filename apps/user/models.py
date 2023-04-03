@@ -5,6 +5,7 @@ from apps.user.choices import GenderType
 from helpers.models import BaseModel
 from sorl.thumbnail.fields import ImageField
 from phonenumber_field.modelfields import PhoneNumberField
+from django.utils.crypto import get_random_string
 
 
 class CustomUser(AbstractUser, BaseModel):
@@ -75,10 +76,19 @@ class HashTagFollower(BaseModel):
 
 
 class Chat(BaseModel):
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=200, null=True, blank=True)
+
+    @property
+    def un_read(self):
+        return self.messages.filter(is_read=False).count()
 
     def __str__(self):
-        return self.name
+        return self.name if self.name else ""
+
+    def save(self, *args, **kwargs):
+        if self.name is None:
+            self.name = get_random_string(17)
+        super(Chat, self).save(*args, **kwargs)
 
     class Meta:
         verbose_name = "Chat"
@@ -101,6 +111,7 @@ class Message(BaseModel):
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name='messages')
     sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     msg = models.TextField()
+    is_read = models.BooleanField(default=False)
 
     def __str__(self):
         return self.sender.username
@@ -108,3 +119,4 @@ class Message(BaseModel):
     class Meta:
         verbose_name = "Message"
         verbose_name_plural = "Messages"
+        # ordering = ['-created_at']
