@@ -6,6 +6,9 @@ from .views import (
     )
 
 urlpatterns = [
+    path("message/", MessageView.as_view(), name='message'),
+    path("message/<str:name>/", MessageView.as_view(), name='message'),
+    path("create_chat/<str:user_id>/", create_chat, name='create-chat'),
     path("sign-in/", sign_in, name='sign-in'),
     path("sign-up/", sign_up, name='sign-up'),
     path("sign-out/", sign_out, name='sign-out'),
@@ -24,4 +27,3 @@ urlpatterns = [
 
     path('profile/edit/', edit_profile, name="edit-profile"),
     # path("message/", MessageView.as_view(), name='message'),
-]
