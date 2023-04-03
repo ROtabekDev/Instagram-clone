@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (
     sign_in, sign_up, sign_out, profile, follow, unfollow, 
     remove_follower, remove_following, MessageView, sms_code,
-    create_like, remove_like, edit_profile
+    create_like, remove_like, edit_profile, create_chat
     )
 
 urlpatterns = [
@@ -27,3 +27,4 @@ urlpatterns = [
 
     path('profile/edit/', edit_profile, name="edit-profile"),
     # path("message/", MessageView.as_view(), name='message'),
+]
