@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (
     sign_in, sign_up, sign_out, profile, follow, unfollow, 
     remove_follower, remove_following, MessageView, sms_code,
-    create_like, remove_like
+    create_like, remove_like, edit_profile
     )
 
 urlpatterns = [
@@ -20,7 +20,8 @@ urlpatterns = [
     path("remove-following/<str:username>/", remove_following, name='remove_following'),
 
     path("create-like/<int:post_id>/", create_like, name='create_like'), 
-    path("remove-like/<int:post_id>/", remove_like, name='remove_like'),
+    path("remove-like/<int:post_id>/", remove_like, name='remove_like'), 
 
+    path('profile/edit/', edit_profile, name="edit-profile"),
     # path("message/", MessageView.as_view(), name='message'),
 ]
