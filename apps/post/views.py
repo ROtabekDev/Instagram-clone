@@ -1,9 +1,11 @@
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.auth.decorators import login_required
-from django.urls import reverse 
+from django.urls import reverse
 
-from .models import Post, PostFileContent, Hashtag, PostHastag
+from apps.user.models import CustomUser 
+
+from .models import Post, PostFileContent, Hashtag, PostHastag, SavedPost
 
 from apps.main.models import Comment, Like
 
@@ -68,13 +70,42 @@ def PostDetail(request, post_id):
     else:
         like_indexes = []
 
+
+    posts = SavedPost.objects.filter(user_id=request.user).values_list('post_id', flat=True).order_by('post_id')
+    
+    if posts.exists():
+        saved_posts = list(posts)
+    else:
+        saved_posts = []
+
     context = {
         'post': post,
         'like_count': like_count,
         'tags': tags,
         'form': form,
         'comments': comments,
-        'like_indexes': like_indexes
+        'like_indexes': like_indexes,
+        'saved_posts': saved_posts
     }
 
     return render(request, 'post_detail.html', context)
+
+
+@login_required(login_url='sign-in')
+def create_savedpost(request, post_id):
+
+    user = get_object_or_404(CustomUser, username=request.user.username)
+    post = get_object_or_404(Post, id=post_id)
+    SavedPost.objects.create(user_id=user, post_id=post)
+   
+    return redirect(request.META.get('HTTP_REFERER')) 
+
+
+@login_required(login_url='sign-in')
+def delete_savedpost(request, post_id):
+
+    user = get_object_or_404(CustomUser, username=request.user.username)
+    post = get_object_or_404(Post, id=post_id)
+    SavedPost.objects.get(user_id=user, post_id=post).delete()
+   
+    return redirect(request.META.get('HTTP_REFERER')) 

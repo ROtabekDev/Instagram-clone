@@ -109,3 +109,17 @@ class SpecifiedUser(BaseModel):
     class Meta:
         verbose_name = 'Belgilangan foydalanuvchi'
         verbose_name_plural = 'Belgilangan foydalanuvchilar'
+
+
+class SavedPost(BaseModel): 
+    """Saqlangan postlar"""
+
+    user_id = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    post_id = models.ForeignKey(Post, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return str(self.id)
+
+    class Meta:
+        verbose_name = 'Saqlangan post'
+        verbose_name_plural = 'Saqlangan postlar'
