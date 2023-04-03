@@ -4,7 +4,7 @@ from django.views.generic import TemplateView
 from django.http import JsonResponse
 
 from apps.main.models import Comment, Notification, Like
-from apps.post.models import Post
+from apps.post.models import Post, SavedPost
  
 from apps.user.models import UserFollower, CustomUser
  
@@ -31,7 +31,14 @@ class HomeView(TemplateView):
             context['like_indexes'] = list(likes)
         else:
             context['like_indexes'] = []
- 
+
+        saved_posts = SavedPost.objects.filter(user_id=self.request.user).values_list('post_id', flat=True).order_by('post_id')
+        
+        if saved_posts.exists():
+            context['saved_posts'] = list(saved_posts)
+        else:
+            context['saved_posts'] = []
+
         context['no_posts'] = posts.exists() 
 
         return context
