@@ -13,6 +13,18 @@
     <main class="main-container">
         <section class="content-container">
             <div class="content">
+                {% if messages %}
+                    <ul class="messages">
+                        {% for message in messages %}
+                            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show"
+                                 role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"
+                                        aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
                 <div class="stories">
                     <button class="stories__left-button">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
@@ -158,27 +170,32 @@
                                 <div class="post__medias">
                                     <div id="carouselExample_{{ post.id }}" class="carousel slide">
                                         <div class="carousel-indicators">
-                                            <button type="button" data-bs-target="#carouselExample_{{ post.id }}Indicators"
+                                            <button type="button"
+                                                    data-bs-target="#carouselExample_{{ post.id }}Indicators"
                                                     data-bs-slide-to="0" class="active" aria-current="true"
                                                     aria-label="Slide 1"></button>
-                                            <button type="button" data-bs-target="#carouselExample_{{ post.id }}Indicators"
+                                            <button type="button"
+                                                    data-bs-target="#carouselExample_{{ post.id }}Indicators"
                                                     data-bs-slide-to="1" aria-label="Slide 2"></button>
-                                            <button type="button" data-bs-target="#carouselExample_{{ post.id }}Indicators"
+                                            <button type="button"
+                                                    data-bs-target="#carouselExample_{{ post.id }}Indicators"
                                                     data-bs-slide-to="2" aria-label="Slide 3"></button>
                                         </div>
                                         <div class="carousel-inner">
                                             {% for pst in post.postfilecontent_set.all %}
                                                 <div class="carousel-item {% if post.postfilecontent_set.first == pst %} active {% endif %}">
                                                     {% if pst.type == "img" %}
-                                                        <a href="{% url 'post-detail' post.pk %}"> <img src="{{ pst.file.url }}" class="gallery-image d-block w-100" alt=""> </a> 
-                                        
+                                                        <a href="{% url 'post-detail' post.pk %}"> <img
+                                                                src="{{ pst.file.url }}"
+                                                                class="gallery-image d-block w-100" alt=""> </a>
+
                                                     {% else %}
-                                                     <a href="{% url 'post-detail' post.pk %}">
-                                                        <video class="d-block w-100" controls>
-                                                            <source src="{{ pst.file.url }}"
-                                                                    type="video/mp4">
-                                                        </video>
-                                                     </a>
+                                                        <a href="{% url 'post-detail' post.pk %}">
+                                                            <video class="d-block w-100" controls>
+                                                                <source src="{{ pst.file.url }}"
+                                                                        type="video/mp4">
+                                                            </video>
+                                                        </a>
                                                     {% endif %}
                                                 </div>
                                             {% endfor %}
@@ -200,24 +217,27 @@
                             <div class="post__footer">
                                 <div class="post__buttons">
 
-                                        {% if post.id not in like_indexes %}
+                                    {% if post.id not in like_indexes %}
                                         <a href="{% url 'create_like' post_id=post.id %}" class="post__button">
                                             <!-- Oq yurak -->
                                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-                                                xmlns="http://www.w3.org/2000/svg">
+                                                 xmlns="http://www.w3.org/2000/svg">
                                                 <path d="M11.4995 21.2609C11.1062 21.2609 10.7307 21.1362 10.4133 20.9001C8.2588 19.3012 3.10938 15.3239 1.81755 12.9143C0.127895 9.76543 1.14258 5.72131 4.07489 3.89968C5.02253 3.31177 6.09533 3 7.18601 3C8.81755 3 10.3508 3.66808 11.4995 4.85726C12.6483 3.66808 14.1815 3 15.8131 3C16.9038 3 17.9766 3.31177 18.9242 3.89968C21.8565 5.72131 22.8712 9.76543 21.186 12.9143C19.8942 15.3239 14.7448 19.3012 12.5902 20.9001C12.2684 21.1362 11.8929 21.2609 11.4995 21.2609ZM7.18601 4.33616C6.34565 4.33616 5.5187 4.57667 4.78562 5.03096C2.43888 6.49183 1.63428 9.74316 2.99763 12.2819C4.19558 14.5177 9.58639 18.6242 11.209 19.8267C11.3789 19.9514 11.6158 19.9514 11.7856 19.8267C13.4082 18.6197 18.799 14.5133 19.997 12.2819C21.3603 9.74316 20.5557 6.48738 18.209 5.03096C17.4804 4.57667 16.6534 4.33616 15.8131 4.33616C14.3425 4.33616 12.9657 5.04878 12.0359 6.28696L11.4995 7.00848L10.9631 6.28696C10.0334 5.04878 8.6611 4.33616 7.18601 4.33616Z"
-                                                    fill="var(--text-dark)" stroke="var(--text-dark)" stroke-width="0.6"/>
+                                                      fill="var(--text-dark)" stroke="var(--text-dark)"
+                                                      stroke-width="0.6"/>
                                             </svg>
                                         </a>
-                                        {% else %}
+                                    {% else %}
                                         <a href="{% url 'remove_like' post_id=post.id %}" class="post__button">
                                             <!-- Qizil yurak -->
-                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                                <path d="M12 20.9989C11.9753 20.9989 11.9506 20.9983 11.926 20.9983C9.58231 20.9983 0.999969 14.3277 0.999969 7.06394C0.999969 3.94723 2.92747 1.16734 6.05113 1.16734C8.11967 1.16734 10.0284 2.24489 11.926 4.09183C13.8235 2.24489 15.7322 1.16734 17.8008 1.16734C20.9245 1.16734 22.852 3.94723 22.852 7.06394C22.852 14.3277 14.2697 20.9983 11.926 20.9983C11.9014 20.9983 11.8767 20.9989 11.852 20.9989H12Z" fill="#F44336"/>
-                                            </svg> 
-                                         
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                                 xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M12 20.9989C11.9753 20.9989 11.9506 20.9983 11.926 20.9983C9.58231 20.9983 0.999969 14.3277 0.999969 7.06394C0.999969 3.94723 2.92747 1.16734 6.05113 1.16734C8.11967 1.16734 10.0284 2.24489 11.926 4.09183C13.8235 2.24489 15.7322 1.16734 17.8008 1.16734C20.9245 1.16734 22.852 3.94723 22.852 7.06394C22.852 14.3277 14.2697 20.9983 11.926 20.9983C11.9014 20.9983 11.8767 20.9989 11.852 20.9989H12Z"
+                                                      fill="#F44336"/>
+                                            </svg>
+
                                         </a>
-                                        {% endif %} 
+                                    {% endif %}
                                     <button class="post__button">
                                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                                              xmlns="http://www.w3.org/2000/svg">
@@ -239,22 +259,28 @@
 
                                     {% if post.id in saved_posts %}
 
-                                    <a href="{% url 'delete-savedpost' post_id=post.id %}" class="post__button post__button--align-right">
-                                        <!-- bookmark qora -->
-                                        <svg width="24" height="24"  xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="black" stroke="currentColor" stroke-width="0" stroke-linecap="round" stroke-linejoin="round" class="feather feather-bookmark">
-                                            <path d="M5 3C5 1.89543 5.89543 1 7 1H17C18.1046 1 19 1.89543 19 3V21L12 18L5 21V3Z"></path>
-                                          </svg>
-                                    </a> 
+                                        <a href="{% url 'delete-savedpost' post_id=post.id %}"
+                                           class="post__button post__button--align-right">
+                                            <!-- bookmark qora -->
+                                            <svg width="24" height="24" xmlns="http://www.w3.org/2000/svg"
+                                                 viewBox="0 0 20 20" fill="black" stroke="currentColor" stroke-width="0"
+                                                 stroke-linecap="round" stroke-linejoin="round"
+                                                 class="feather feather-bookmark">
+                                                <path d="M5 3C5 1.89543 5.89543 1 7 1H17C18.1046 1 19 1.89543 19 3V21L12 18L5 21V3Z"></path>
+                                            </svg>
+                                        </a>
                                     {% else %}
-                                    <a href="{% url 'create-savedpost' post_id=post.id %}" class="post__button post__button--align-right">
-                                        <!-- bookmark oq -->
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none"  
-                                             xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M19.875 2H4.125C3.50625 2 3 2.44939 3 3.00481V22.4648C3 23.0202 3.36563 23.1616 3.82125 22.7728L11.5444 16.1986C11.7244 16.0471 12.0225 16.0471 12.2025 16.1936L20.1731 22.7879C20.6287 23.1666 21 23.0202 21 22.4648V3.00481C21 2.44939 20.4994 2 19.875 2ZM19.3125 20.0209L13.3444 15.0827C12.9281 14.7394 12.405 14.5677 11.8763 14.5677C11.3363 14.5677 10.8019 14.7444 10.3856 15.0979L4.6875 19.9502V3.51479H19.3125V20.0209Z"
-                                                  fill="var(--text-dark)" stroke="var(--text-dark)" stroke-width="0.7"/>
-                                        </svg>
-                                    </a>
-                                    {% endif %} 
+                                        <a href="{% url 'create-savedpost' post_id=post.id %}"
+                                           class="post__button post__button--align-right">
+                                            <!-- bookmark oq -->
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                                 xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M19.875 2H4.125C3.50625 2 3 2.44939 3 3.00481V22.4648C3 23.0202 3.36563 23.1616 3.82125 22.7728L11.5444 16.1986C11.7244 16.0471 12.0225 16.0471 12.2025 16.1936L20.1731 22.7879C20.6287 23.1666 21 23.0202 21 22.4648V3.00481C21 2.44939 20.4994 2 19.875 2ZM19.3125 20.0209L13.3444 15.0827C12.9281 14.7394 12.405 14.5677 11.8763 14.5677C11.3363 14.5677 10.8019 14.7444 10.3856 15.0979L4.6875 19.9502V3.51479H19.3125V20.0209Z"
+                                                      fill="var(--text-dark)" stroke="var(--text-dark)"
+                                                      stroke-width="0.7"/>
+                                            </svg>
+                                        </a>
+                                    {% endif %}
                                 </div>
 
                                 <div class="post__infos" style="gap: 0">
@@ -303,33 +329,35 @@
                         </article>
                     {% endfor %}
                     {% if not no_posts %}
-                    <div class="side-menu__suggestions-content" style="padding: 0 40px;">
-                        <div class="side-menu__suggestions-header">
-                            <h2>Suggestions for You</h2>
-                            <button>See All</button>
-                        </div>
-                        {% for user in users %}
-                        <div class="side-menu__suggestions-content">
-                            <div class="side-menu__suggestion">
-                                <a href="{% url 'profile' user.username %}" class="side-menu__suggestion-avatar">
-                                    {% if user.avatar %}
-                                    <img src="{{ user.avatar.url }}" alt="User Picture">
-                                    {% else %}
-                                        <img src="{% static 'default-user.png' %}" alt="User Picture">
-                                    {% endif %}
-                                </a>
-    
-                                <div class="side-menu__suggestion-info">
-                                    <a href="{% url 'profile' user.username %}">{{ user.full_name }}</a>
-                                    <a href="{% url 'profile' user.username %}"><span>@{{ user.username }}</span></a>
+                        <div class="side-menu__suggestions-content" style="padding: 0 40px;">
+                            <div class="side-menu__suggestions-header">
+                                <h2>Suggestions for You</h2>
+                                <button>See All</button>
+                            </div>
+                            {% for user in users %}
+                                <div class="side-menu__suggestions-content">
+                                    <div class="side-menu__suggestion">
+                                        <a href="{% url 'profile' user.username %}"
+                                           class="side-menu__suggestion-avatar">
+                                            {% if user.avatar %}
+                                                <img src="{{ user.avatar.url }}" alt="User Picture">
+                                            {% else %}
+                                                <img src="{% static 'default-user.png' %}" alt="User Picture">
+                                            {% endif %}
+                                        </a>
+
+                                        <div class="side-menu__suggestion-info">
+                                            <a href="{% url 'profile' user.username %}">{{ user.full_name }}</a>
+                                            <a href="{% url 'profile' user.username %}"><span>@{{ user.username }}</span></a>
+                                        </div>
+
+                                        <a href="{% url 'follow_user' user.username %}"
+                                           class="side-menu__suggestion-button">Follow</a>
+                                        <!-- <a href="{% url 'profile' user.username %}" class="side-menu__suggestion-button">Follow</a> -->
+                                    </div>
                                 </div>
-    
-                                <a href="{% url 'follow_user' user.username %}" class="side-menu__suggestion-button">Follow</a>
-                                <!-- <a href="{% url 'profile' user.username %}" class="side-menu__suggestion-button">Follow</a> -->
-                            </div>  
+                            {% endfor %}
                         </div>
-                        {% endfor %} 
-                    </div>
                     {% endif %}
                 </div>
             </div>
@@ -337,7 +365,7 @@
                 <div class="side-menu__user-profile">
                     <a href="{{ request.user.username }}/" target="_blank" class="side-menu__user-avatar">
                         {% if request.user.avatar %}
-                        <img src="{{ request.user.avatar.url }}" alt="User Picture">
+                            <img src="{{ request.user.avatar.url }}" alt="User Picture">
                         {% else %}
                             <img src="{% static 'default-user.png' %}" alt="User Picture">
                         {% endif %}
@@ -355,25 +383,25 @@
                         <button>See All</button>
                     </div>
                     {% for user in users %}
-                    <div class="side-menu__suggestions-content">
-                        <div class="side-menu__suggestion">
-                            <a href="{% url 'profile' user.username %}" class="side-menu__suggestion-avatar">
-                                {% if user.avatar %}
-                                <img src="{{ user.avatar.url }}" alt="User Picture">
-                                {% else %}
-                                    <img src="{% static 'default-user.png' %}" alt="User Picture">
-                                {% endif %}
-                            </a>
+                        <div class="side-menu__suggestions-content">
+                            <div class="side-menu__suggestion">
+                                <a href="{% url 'profile' user.username %}" class="side-menu__suggestion-avatar">
+                                    {% if user.avatar %}
+                                        <img src="{{ user.avatar.url }}" alt="User Picture">
+                                    {% else %}
+                                        <img src="{% static 'default-user.png' %}" alt="User Picture">
+                                    {% endif %}
+                                </a>
 
-                            <div class="side-menu__suggestion-info">
-                                <a href="{% url 'profile' user.username %}">{{ user.full_name }}</a>
-                                <a href="{% url 'profile' user.username %}"><span>@{{ user.username }}</span></a>
+                                <div class="side-menu__suggestion-info">
+                                    <a href="{% url 'profile' user.username %}">{{ user.full_name }}</a>
+                                    <a href="{% url 'profile' user.username %}"><span>@{{ user.username }}</span></a>
+                                </div>
+
+                                <a href="{% url 'follow_user' user.username %}" class="side-menu__suggestion-button">Follow</a>
+                                <!-- <a href="{% url 'profile' user.username %}" class="side-menu__suggestion-button">Follow</a> -->
                             </div>
-
-                            <a href="{% url 'follow_user' user.username %}" class="side-menu__suggestion-button">Follow</a>
-                            <!-- <a href="{% url 'profile' user.username %}" class="side-menu__suggestion-button">Follow</a> -->
-                        </div>  
-                    </div>
+                        </div>
                     {% endfor %}
                 </div>
             </section>

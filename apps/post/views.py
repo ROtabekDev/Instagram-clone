@@ -21,7 +21,6 @@ def addpost(request):
         description = data['description']
         
         files = request.FILES.getlist('files')
-        print(data)
 
         hashtags = [tag.strip("#") for tag in description.split() if tag.startswith("#")]
         new_description = ' '.join([word for word in description.split() if not word.startswith('#')])
@@ -35,7 +34,7 @@ def addpost(request):
             )
 
         for i in hashtags:
-            tag = Hashtag.objects.create(tag_name=i)
+            tag = Hashtag.objects.get_or_create(tag_name=i)
             PostHastag.objects.create(post_id=post, tag_id=tag)
           
         return redirect("/")
