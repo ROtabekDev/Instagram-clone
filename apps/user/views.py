@@ -68,17 +68,11 @@ def sign_up(request):
         password = r['password']
 
         if re.match(phone_regex_pattern, phone_or_email):
-            print('phone')
-            user = authenticate(username=phone_or_email, password=password)
-            print(user)
+            user = authenticate(username=phone_or_email, password=make_password(password))
         elif re.match(email_regex_pattern, phone_or_email):
-            print('email')
-            user = authenticate(username=phone_or_email, password=password)
-            print(user)
+            user = authenticate(username=phone_or_email, password=make_password(password))
         else:
-            print('username')
             user = authenticate(username=username, password=password)
-            print(user)
         if user is not None:
             messages.error(request, f'{user} is already exist!')
             return redirect('sign-in')
@@ -97,6 +91,7 @@ def sign_up(request):
             cache.set('code', code)
             return render(request, 'sms-code.html', {'code': code, 'session': session})
     return render(request, 'sign-up.html')
+
     #
     #     user = authenticate(username=username, password=password)
     #     if user is not None:
