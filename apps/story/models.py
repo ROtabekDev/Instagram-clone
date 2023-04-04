@@ -27,4 +27,17 @@ class StoryContent(BaseModel):
     class Meta:
         verbose_name = "StoryContent"
         verbose_name_plural = "StoryContents"
+
+
+class StoryViewed(BaseModel):
+    """Ko`rilgan storylar"""
+    story = models.ForeignKey(Story, on_delete=models.CASCADE, related_name='views')
+    user_id = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='viewed_stories')
+
+    def __str__(self):
+        return str(self.id)
+
+    class Meta:
+        verbose_name = "Ko`rilgan story"
+        verbose_name_plural = "Ko`rilgan storylar"
         

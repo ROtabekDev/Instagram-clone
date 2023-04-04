@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load post_tags %}
+{% block title %}
+<title>
+    Instagram
+</title>
+{% endblock title %}
+{% block css %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+{% endblock css %}
+{% block content %}
+<main class="main-container">
+    <section class="content-container">
+        <div class="content">
+
+            <div class="posts">
+                {% for story in stories %}
+                <article class="post">
+                    <div class="post__header"> 
+                        <div class="post__profile">
+                            <a href="" class="post__avatar">
+                                {% if story.user.avatar %}
+                                <img src="{{ story.user.avatar.url }}" alt="User Picture">
+                                {% else %}
+                                <img src="{% static 'default-user.png' %}" alt="User Picture">
+                                {% endif %}
+                            </a>
+                            <a href="{% url 'profile' story.user.username %}" class="post__user">{{ story.user.full_name }}</a>
+
+                        </div>
+
+                        <button class="post__more-options">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="6.5" cy="11.5" r="1.5" fill="var(--text-dark)" />
+                                <circle cx="12" cy="11.5" r="1.5" fill="var(--text-dark)" />
+                                <circle cx="17.5" cy="11.5" r="1.5" fill="var(--text-dark)" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <div class="post__content">
+                        <div class="post__medias">
+                            <div id="carouselExample_{{ story.id }}" class="carousel slide">
+                                <div class="carousel-indicators">
+                                    <button type="button" data-bs-target="#carouselExample_{{ story.id }}Indicators"
+                                        data-bs-slide-to="0" class="active" aria-current="true"
+                                        aria-label="Slide 1"></button>
+                                    <button type="button" data-bs-target="#carouselExample_{{ story.id }}Indicators"
+                                        data-bs-slide-to="1" aria-label="Slide 2"></button>
+                                    <button type="button" data-bs-target="#carouselExample_{{ story.id }}Indicators"
+                                        data-bs-slide-to="2" aria-label="Slide 3"></button>
+                                </div>
+                                <div class="carousel-inner">
+                                    {% for pst in story.storycontent_set.all %}
+                                    <div
+                                        class="carousel-item {% if story.storycontent_set.first == pst %} active {% endif %}">
+                                        {% if pst.type == "img" %}
+                                        <a href="#"> <img src="{{ pst.file.url }}"
+                                                class="gallery-image d-block w-100" alt=""> </a>
+
+                                        {% else %}
+                                        <a href="#">
+                                            <video class="d-block w-100" controls>
+                                                <source src="{{ pst.file.url }}" type="video/mp4">
+                                            </video>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                                <button class="carousel-control-prev" type="button"
+                                    data-bs-target="#carouselExample_{{ story.id }}" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Previous</span>
+                                </button>
+                                <button class="carousel-control-next" type="button"
+                                    data-bs-target="#carouselExample_{{ story.id }}" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                    <span class="visually-hidden">Next</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </article>
+                {% endfor %}
+
+            </div>
+        </div>
+    </section>
+</main>
+
+
+
+
+{% endblock content %}
