@@ -1,3 +1,4 @@
+from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.views.generic import TemplateView
 from django.contrib.auth.decorators import login_required
@@ -21,3 +22,25 @@ class Stories_detail(TemplateView):
             StoryViewed.objects.update_or_create(story=story, user_id=self.request.user)
         return context
     
+
+
+@login_required(login_url='sign-in')
+def create_story(request):
+    user = request.user 
+
+    if request.method == 'POST':
+        data = request.POST
+        
+        files = request.FILES.getlist('files') 
+
+        story = Story.objects.create(user=user)
+
+        for file in files:
+            StoryContent.objects.create(
+                story=story,
+                file=file
+            )
+ 
+        return redirect("/")
+ 
+    return render(request, 'story_create.html')
