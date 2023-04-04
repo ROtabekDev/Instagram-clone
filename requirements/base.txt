@@ -12,3 +12,4 @@ websocket-client==1.5.1
 daphne==4.0.0
 redis==4.5.4
 django-redis==5.2.0
+social-auth-app-django==5.2.0
