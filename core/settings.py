@@ -56,6 +56,7 @@ THIRD_PARTY_APPS = [
     'sorl.thumbnail',
     'phonenumber_field',
     'crispy_forms',
+    'social_django', # social auth
 ]
 
 INSTALLED_APPS = DJANGO_APPS + CUSTOM_APPS + THIRD_PARTY_APPS
@@ -68,7 +69,8 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    "apps.user.custom_middleware.OnlineStatusMiddleware"
+    "apps.user.custom_middleware.OnlineStatusMiddleware",
+    'social_django.middleware.SocialAuthExceptionMiddleware', # social auth
 ]
 
 ROOT_URLCONF = "core.urls"
@@ -85,6 +87,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 'core.context_processors.custom_context_processors.have_notification',
+                'social_django.context_processors.backends', # social auth
             ],
         },
     },
@@ -156,7 +159,18 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 AUTH_USER_MODEL = "user.CustomUser"
 
-LOGIN_URL = "/sign-in/"
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'apps.user.utils.PhoneNumberBackend',
+    'apps.user.utils.EmailBackend',
+    'social_core.backends.google.GoogleOAuth2',  # social auth
+]
+
+LOGIN_URL = "/sign-in/" 
+LOGIN_REDIRECT_URL = 'home'  # social auth
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = getenv("SOCIAL_AUTH_GOOGLE_OAUTH2_KEY") # social auth
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = getenv("SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET") # social auth
 
 CACHES = {
     'default': {

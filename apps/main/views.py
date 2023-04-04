@@ -1,10 +1,13 @@
 import json
+from django.utils import timezone
 from django.shortcuts import render
 from django.views.generic import TemplateView
 from django.http import JsonResponse
+from django.db.models import Count
 
 from apps.main.models import Comment, Notification, Like
 from apps.post.models import Post, SavedPost
+from apps.story.models import Story, StoryViewed
  
 from apps.user.models import UserFollower, CustomUser
  
@@ -23,9 +26,15 @@ class HomeView(TemplateView):
             user_id=self.request.user)
         context['posts'] = posts 
         
-        users = CustomUser.objects.all().exclude(following__follower=self.request.user).exclude(
+        unfollow_users = CustomUser.objects.all().exclude(following__follower=self.request.user).exclude(
             id=self.request.user.id)
-        context['users'] = users
+        context['unfollow_users'] = unfollow_users
+
+        follow_users = CustomUser.objects.all().filter(following__follower=self.request.user).exclude(
+            id=self.request.user.id)
+        context['follow_users'] = follow_users
+        
+
         likes = Like.objects.filter(user_id=self.request.user).filter(content_type__model='post').values_list('object_id', flat=True).order_by('object_id')
         if likes.exists():
             context['like_indexes'] = list(likes)
@@ -39,7 +48,45 @@ class HomeView(TemplateView):
         else:
             context['saved_posts'] = []
 
-        context['no_posts'] = posts.exists() 
+        context['no_posts'] = posts.exists()
+
+        stories = Story.objects.filter(user_id__following__follower=self.request.user).exclude(
+            user_id=self.request.user).filter(
+            created_at__gte=timezone.now() - timezone.timedelta(hours=24)
+        )
+        
+        user_id = Story.objects.filter(user_id__following__follower=self.request.user).exclude(
+            user_id=self.request.user).filter(
+            created_at__gte=timezone.now() - timezone.timedelta(hours=24)
+        ).values_list('user', flat=True).order_by('-created_at')
+        
+        user_id_list = list(set(user_id)) 
+      
+        story_info = {}
+        
+        for j in user_id_list:
+            if len(stories.filter(user_id=j))==1:
+                try:
+                    for i in stories.filter(user_id=j):
+                        story = Story.objects.get(user_id=j)
+                        StoryViewed.objects.get(user_id=self.request.user, story=story)
+
+                    story_info[j] = {'user_id': j, 'message': True}
+                except: 
+                    story_info[j] = {'user_id': j, 'message': False}
+            else:
+                try:
+                    user_stories = Story.objects.filter(user_id=j)
+                    for i in user_stories: 
+                        StoryViewed.objects.get(user_id=self.request.user, story=i)
+
+                    story_info[j] = {'user_id': j, 'message': True}
+                except:
+                    
+                    story_info[j] = {'user_id': j, 'message': False}
+                 
+        context['story_info'] = story_info
+        context['user_id_list'] = user_id_list 
 
         return context
 

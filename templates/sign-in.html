@@ -42,9 +42,18 @@
                 <button class="form-btn" type="submit">Log in</button>
                 <!-- <a href="index.html" class="form-btn" type="submit">Log in</a> -->
                 <span class="has-separator">Or</span>
-                <a class="facebook-login" href="#">
+
+                <div class="row">
+                    <div class="col-md-8 mx-auto social-container my-2 order-md-1">
+                        <button class="btn btn-light mb-2">
+                            <a href="{% url 'social:begin' 'google-oauth2' %}">Login With Google</a>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- <a class="facebook-login" href="#">
                     <i class="fab fa-facebook-square"></i> Log in with Facebook
-                </a>
+                </a> -->
                 <a class="password-reset" href="#">Forgot password?</a>
             </form>
             <div class="sign-up">
