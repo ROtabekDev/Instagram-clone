@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 from apps.user.choices import GenderType
+from apps.user.custom_user_manager import CustomUserManager
 from helpers.models import BaseModel
 from sorl.thumbnail.fields import ImageField
 from phonenumber_field.modelfields import PhoneNumberField
@@ -20,6 +21,11 @@ class CustomUser(AbstractUser, BaseModel):
     gender = models.CharField(max_length=6, choices=GenderType.choices, default=GenderType.MALE)
     last_activity = models.DateTimeField(null=True, blank=True)
     is_online = models.BooleanField(default=False)
+
+    USERNAME_FIELD = "username"
+    REQUIRED_FIELDS = ["full_name"]
+
+    objects = CustomUserManager()
 
     class Meta:
         verbose_name = "User"

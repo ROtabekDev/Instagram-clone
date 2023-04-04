@@ -1,30 +1,25 @@
 import re
 
-from django.contrib.contenttypes.models import ContentType
 from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
+from django.contrib.contenttypes.models import ContentType
 from django.core.cache import cache
-from django.shortcuts import render, redirect, get_object_or_404
+from django.db.models import Q
+from django.http import HttpResponseRedirect
+from django.shortcuts import redirect, get_object_or_404
+from django.shortcuts import render
+from django.urls import resolve, reverse
 from django.utils.crypto import get_random_string
 from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView
 
-from apps.user.models import CustomUser, Participant, Chat, Message
-from django.http import HttpResponseRedirect
-from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import resolve, reverse
-from django.utils.decorators import method_decorator
-from django.views.generic import TemplateView
-
-from apps.post.models import Post
 from apps.main.models import Like
+from apps.post.models import Post
 from apps.user.models import CustomUser, UserFollower
-from apps.user.utils import phone_regex_pattern, email_regex_pattern, PhoneNumberBackend, EmailBackend
-from django.db.models import Q, Count
-
-from django.shortcuts import render
+from apps.user.models import Participant, Chat
+from apps.user.utils import phone_regex_pattern, email_regex_pattern
 from .forms import EditProfileForm
 
 
@@ -34,17 +29,12 @@ def sign_in(request):
             r = request.POST
             username = r['username']
             password = r['password']
-            print(username, password)
-            if re.match(phone_regex_pattern, username):
-                user = authenticate(request, username=username, password=password, backend='core.backends.PhoneNumberBackend')
-                print('phone', user)
+            user = authenticate(request, username=username, password=password)
+            if not user:
+                user = authenticate(request, phone_number=username, password=password)
+            elif not user:
+                user = authenticate(request, email=username, password=password)
 
-            elif re.match(email_regex_pattern, username):
-                user = authenticate(request, username=username, password=password, backend='core.backends.EmailBackend')
-                print('email', user)
-            else:
-                user = authenticate(request, username=username, password=password)
-                print('username', user)
             if user is not None:
                 login(request, user)
                 messages.success(request, f'Welcome {user}')
@@ -68,9 +58,9 @@ def sign_up(request):
         password = r['password']
 
         if re.match(phone_regex_pattern, phone_or_email):
-            user = authenticate(username=phone_or_email, password=make_password(password))
+            user = authenticate(username=phone_or_email, password=password)
         elif re.match(email_regex_pattern, phone_or_email):
-            user = authenticate(username=phone_or_email, password=make_password(password))
+            user = authenticate(username=phone_or_email, password=password)
         else:
             user = authenticate(username=username, password=password)
         if user is not None:
@@ -79,7 +69,6 @@ def sign_up(request):
         else:
             session = get_random_string(11)
             code = get_random_string(length=5, allowed_chars="0123456789")
-            print("\n\n", code, "\n\n")
             user = {
                 "username": username,
                 "full_name": full_name,
@@ -92,52 +81,12 @@ def sign_up(request):
             return render(request, 'sms-code.html', {'code': code, 'session': session})
     return render(request, 'sign-up.html')
 
-    #
-    #     user = authenticate(username=username, password=password)
-    #     if user is not None:
-    #         messages.error(request, f'{user} is already exist!')
-    #         return redirect('sign-in')
-    #     else:
-    #         session = get_random_string(11)
-    #         code = get_random_string(length=5, allowed_chars="0123456789")
-    #         print("\n\n", code, "\n\n")
-    #         if re.match(phone_regex_pattern, phone_or_email):
-    #             # user = CustomUser.objects.create(username=username, full_name=full_name, phone_number=phone_or_email, password=make_password(password), is_active=False)
-    #             user = {
-    #                 "username": username,
-    #                 "full_name": full_name,
-    #                 "phone_or_email": phone_or_email,
-    #                 "password": password
-    #             }
-    #             cache.set('user', user, timeout=600)
-    #             cache.set('session', session, timeout=600)
-    #             cache.set('code', code, timeout=600)
-    #         elif re.match(email_regex_pattern, phone_or_email):
-    #             # user = CustomUser.objects.create(username=username, full_name=full_name, email=phone_or_email, password=make_password(password), is_active=False)
-    #             user = {
-    #                 "username": username,
-    #                 "full_name": full_name,
-    #                 "phone_or_email": phone_or_email,
-    #                 "password": password
-    #             }
-    #             cache.set('user', user, timeout=600)
-    #             cache.set('session', session, timeout=600)
-    #             cache.set('code', code, timeout=600)
-    #         else:
-    #             messages.error(request, f'Enter SMS code')
-    #         messages.error(request, f'{user} profile successfully created!')
-    #
-    #         return render(request, 'sms-code.html', {'code': code})
-    # return render(request, 'sign-up.html')
-
 
 def sms_code(request):
     if request.method == "POST":
         r = request.POST
         code = r['num1'] + r['num2'] + r['num3'] + r['num4'] + r['num5']
         user = cache.get('user')
-        print(cache.get('session'), r['session'])
-        print(cache.get('code'), code)
         if cache.get('session') == r['session'] and cache.get('code') == code:
             if re.match(phone_regex_pattern, user['phone_or_email']):
                 user = CustomUser.objects.create(username=user['username'], full_name=user['full_name'],
@@ -150,16 +99,6 @@ def sms_code(request):
             return redirect('sign-in')
     return redirect('sign-up')
 
-    #
-    #     else:
-    #         return redirect('sms-code')
-    # session = get_random_string(11)
-    # code = get_random_string(length=5, allowed_chars="0123456789")
-    # cache.set('session', session, timeout=600)
-    # cache.set('code', code, timeout=600)
-    # print("\n\n", code, "\n\n")
-    # return render(request, 'sms-code.html', {'code': code})
-
 
 def sign_out(request):
     logout(request)
@@ -170,8 +109,8 @@ def sign_out(request):
 @login_required(redirect_field_name='next')
 def profile(request, username):
     user = get_object_or_404(CustomUser, username=username)
-     
-    self_profile= True if user==request.user else False
+
+    self_profile = True if user == request.user else False
     user_follow = UserFollower.objects.filter(follower=request.user, following=user).exists()
     url_name = resolve(request.path).url_name
     posts = Post.objects.filter(user_id=user).order_by('-created_at')
@@ -180,7 +119,7 @@ def profile(request, username):
         posts = Post.objects.filter(user_id=user).order_by('-created_at')
     else:
         posts = user.saved_posts.all()
-     
+
     context = {
         'user': get_object_or_404(CustomUser, username=username),
         'self_profile': self_profile,
@@ -197,7 +136,8 @@ class MessageView(TemplateView):
     def get(self, request, *args, **kwargs):
 
         context = self.get_context_data(**kwargs)
-        context['participants'] = Participant.objects.filter(~Q(user=self.request.user), chat__participant__user=self.request.user)
+        context['participants'] = Participant.objects.filter(~Q(user=self.request.user),
+                                                             chat__participant__user=self.request.user)
         context['all_users'] = CustomUser.objects.all().exclude(id=self.request.user.id)
         try:
             name = kwargs.get('name')
@@ -223,7 +163,7 @@ def create_chat(request, user_id):
         Participant.objects.create(user=request.user, chat=chat)
 
         return redirect(f'/message/{chat.name}')
-        
+
     # def get_context_data(self, **kwargs):
     #     context = super().get_context_data(**kwargs)
     #     context['posts'] = Post.objects.filter(user_id__following__follower=self.request.user).exclude(
@@ -233,67 +173,64 @@ def create_chat(request, user_id):
 
 @login_required(login_url='sign-in')
 def follow(request, username):
-
     following = get_object_or_404(CustomUser, username=username)
 
     UserFollower.objects.update_or_create(follower=request.user, following=following)
-   
+
     return redirect(request.META.get('HTTP_REFERER'))
     # return HttpResponseRedirect(reverse('profile', args=[username]))
 
 
 @login_required(login_url='sign-in')
 def unfollow(request, username):
-
     following = get_object_or_404(CustomUser, username=username)
 
     user_follow = UserFollower.objects.get(follower=request.user, following=following)
     user_follow.delete()
-   
+
     return redirect(request.META.get('HTTP_REFERER'))
     # return HttpResponseRedirect(reverse('profile', args=[username]))
 
 
 @login_required(login_url='sign-in')
 def remove_follower(request, username):
-
     follower = get_object_or_404(CustomUser, username=username)
-     
+
     user_follower = UserFollower.objects.get(following=request.user, follower=follower)
     user_follower.delete()
-   
+
     return HttpResponseRedirect(reverse('profile', args=[request.user.username]))
 
 
 @login_required(login_url='sign-in')
 def remove_following(request, username):
-     
     following = get_object_or_404(CustomUser, username=username)
-    
+
     user_follower = UserFollower.objects.get(follower=request.user, following=following)
-    
+
     user_follower.delete()
-   
+
     return HttpResponseRedirect(reverse('profile', args=[request.user.username]))
 
 
 @login_required(login_url='sign-in')
 def create_like(request, post_id):
     content_type = ContentType.objects.get(model='post')
-    post = content_type.model_class().objects.get(id=post_id) 
+    post = content_type.model_class().objects.get(id=post_id)
     Like.objects.update_or_create(user_id=request.user, content_type=content_type, object_id=post.id)
-   
-    return redirect(request.META.get('HTTP_REFERER')) 
+
+    return redirect(request.META.get('HTTP_REFERER'))
 
 
 @login_required(login_url='sign-in')
 def remove_like(request, post_id):
     content_type = ContentType.objects.get(model='post')
-    post = content_type.model_class().objects.get(id=post_id) 
-    like = Like.objects.get(user_id=request.user, content_type=content_type, object_id=post.id) 
+    post = content_type.model_class().objects.get(id=post_id)
+    like = Like.objects.get(user_id=request.user, content_type=content_type, object_id=post.id)
     like.delete()
-   
-    return redirect(request.META.get('HTTP_REFERER')) 
+
+    return redirect(request.META.get('HTTP_REFERER'))
+
 
 @login_required(login_url='sign-in')
 def edit_profile(request):
