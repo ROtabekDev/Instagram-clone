@@ -21,7 +21,7 @@ from django.views.generic import TemplateView
 from apps.post.models import Post
 from apps.main.models import Like
 from apps.user.models import CustomUser, UserFollower
-from apps.user.utils import phone_regex_pattern, email_regex_pattern
+from apps.user.utils import phone_regex_pattern, email_regex_pattern, PhoneNumberBackend, EmailBackend
 from django.db.models import Q, Count
 
 from django.shortcuts import render
@@ -34,14 +34,17 @@ def sign_in(request):
             r = request.POST
             username = r['username']
             password = r['password']
-
+            print(username, password)
             if re.match(phone_regex_pattern, username):
-                user = authenticate(request, phone_number=username, password=password)
+                user = authenticate(request, username=username, password=password, backend='core.backends.PhoneNumberBackend')
+                print('phone', user)
+
             elif re.match(email_regex_pattern, username):
-                user = authenticate(request, email=username, password=password)
+                user = authenticate(request, username=username, password=password, backend='core.backends.EmailBackend')
+                print('email', user)
             else:
                 user = authenticate(request, username=username, password=password)
-
+                print('username', user)
             if user is not None:
                 login(request, user)
                 messages.success(request, f'Welcome {user}')
@@ -64,7 +67,18 @@ def sign_up(request):
         username = r['username']
         password = r['password']
 
-        user = authenticate(username=username, password=password)
+        if re.match(phone_regex_pattern, phone_or_email):
+            print('phone')
+            user = authenticate(username=phone_or_email, password=password)
+            print(user)
+        elif re.match(email_regex_pattern, phone_or_email):
+            print('email')
+            user = authenticate(username=phone_or_email, password=password)
+            print(user)
+        else:
+            print('username')
+            user = authenticate(username=username, password=password)
+            print(user)
         if user is not None:
             messages.error(request, f'{user} is already exist!')
             return redirect('sign-in')
@@ -72,34 +86,54 @@ def sign_up(request):
             session = get_random_string(11)
             code = get_random_string(length=5, allowed_chars="0123456789")
             print("\n\n", code, "\n\n")
-            if re.match(phone_regex_pattern, phone_or_email):
-                # user = CustomUser.objects.create(username=username, full_name=full_name, phone_number=phone_or_email, password=make_password(password), is_active=False)
-                user = {
-                    "username": username,
-                    "full_name": full_name,
-                    "phone_or_email": phone_or_email,
-                    "password": password
-                }
-                cache.set('user', user, timeout=600)
-                cache.set('session', session, timeout=600)
-                cache.set('code', code, timeout=600)
-            elif re.match(email_regex_pattern, phone_or_email):
-                # user = CustomUser.objects.create(username=username, full_name=full_name, email=phone_or_email, password=make_password(password), is_active=False)
-                user = {
-                    "username": username,
-                    "full_name": full_name,
-                    "phone_or_email": phone_or_email,
-                    "password": password
-                }
-                cache.set('user', user, timeout=600)
-                cache.set('session', session, timeout=600)
-                cache.set('code', code, timeout=600)
-            else:
-                messages.error(request, f'Enter SMS code')
-            messages.error(request, f'{user} profile successfully created!')
-
-            return render(request, 'sms-code.html', {'code': code})
+            user = {
+                "username": username,
+                "full_name": full_name,
+                "phone_or_email": phone_or_email,
+                "password": password
+            }
+            cache.set('user', user)
+            cache.set('session', session)
+            cache.set('code', code)
+            return render(request, 'sms-code.html', {'code': code, 'session': session})
     return render(request, 'sign-up.html')
+    #
+    #     user = authenticate(username=username, password=password)
+    #     if user is not None:
+    #         messages.error(request, f'{user} is already exist!')
+    #         return redirect('sign-in')
+    #     else:
+    #         session = get_random_string(11)
+    #         code = get_random_string(length=5, allowed_chars="0123456789")
+    #         print("\n\n", code, "\n\n")
+    #         if re.match(phone_regex_pattern, phone_or_email):
+    #             # user = CustomUser.objects.create(username=username, full_name=full_name, phone_number=phone_or_email, password=make_password(password), is_active=False)
+    #             user = {
+    #                 "username": username,
+    #                 "full_name": full_name,
+    #                 "phone_or_email": phone_or_email,
+    #                 "password": password
+    #             }
+    #             cache.set('user', user, timeout=600)
+    #             cache.set('session', session, timeout=600)
+    #             cache.set('code', code, timeout=600)
+    #         elif re.match(email_regex_pattern, phone_or_email):
+    #             # user = CustomUser.objects.create(username=username, full_name=full_name, email=phone_or_email, password=make_password(password), is_active=False)
+    #             user = {
+    #                 "username": username,
+    #                 "full_name": full_name,
+    #                 "phone_or_email": phone_or_email,
+    #                 "password": password
+    #             }
+    #             cache.set('user', user, timeout=600)
+    #             cache.set('session', session, timeout=600)
+    #             cache.set('code', code, timeout=600)
+    #         else:
+    #             messages.error(request, f'Enter SMS code')
+    #         messages.error(request, f'{user} profile successfully created!')
+    #
+    #         return render(request, 'sms-code.html', {'code': code})
+    # return render(request, 'sign-up.html')
 
 
 def sms_code(request):
@@ -107,8 +141,8 @@ def sms_code(request):
         r = request.POST
         code = r['num1'] + r['num2'] + r['num3'] + r['num4'] + r['num5']
         user = cache.get('user')
-        # print(cache.get('session'), r['session'])
-        # print(cache.get('code'), code)
+        print(cache.get('session'), r['session'])
+        print(cache.get('code'), code)
         if cache.get('session') == r['session'] and cache.get('code') == code:
             if re.match(phone_regex_pattern, user['phone_or_email']):
                 user = CustomUser.objects.create(username=user['username'], full_name=user['full_name'],
@@ -117,16 +151,19 @@ def sms_code(request):
             elif re.match(email_regex_pattern, user['phone_or_email']):
                 user = CustomUser.objects.create(username=user['username'], full_name=user['full_name'],
                                                  email=user['phone_or_email'], password=make_password(user['password']))
-            return redirect('home')
+            messages.success(request, f"{user} profile successfully created!")
+            return redirect('sign-in')
+    return redirect('sign-up')
 
-        else:
-            return redirect('sms-code')
-    session = get_random_string(11)
-    code = get_random_string(length=5, allowed_chars="0123456789")
-    cache.set('session', session, timeout=600)
-    cache.set('code', code, timeout=600)
-    print("\n\n", code, "\n\n")
-    return render(request, 'sms-code.html', {'code': code})
+    #
+    #     else:
+    #         return redirect('sms-code')
+    # session = get_random_string(11)
+    # code = get_random_string(length=5, allowed_chars="0123456789")
+    # cache.set('session', session, timeout=600)
+    # cache.set('code', code, timeout=600)
+    # print("\n\n", code, "\n\n")
+    # return render(request, 'sms-code.html', {'code': code})
 
 
 def sign_out(request):

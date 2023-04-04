@@ -14,8 +14,8 @@ class CustomUser(AbstractUser, BaseModel):
     full_name = models.CharField(max_length=100)
     avatar = ImageField(null=True, blank=True, upload_to="images/avatar/%Y/%m/%d/")
     birthday = models.DateTimeField(null=True, blank=True)
-    email = models.EmailField(null=True, blank=True)
-    phone_number = PhoneNumberField(region="UZ", null=True, blank=True)
+    email = models.EmailField(null=True, blank=True, unique=True)
+    phone_number = PhoneNumberField(region="UZ", null=True, blank=True, unique=True)
     bio = models.CharField(max_length=255, null=True, blank=True)
     gender = models.CharField(max_length=6, choices=GenderType.choices, default=GenderType.MALE)
 
@@ -81,6 +81,10 @@ class Chat(BaseModel):
     @property
     def un_read(self):
         return self.messages.filter(is_read=False).count()
+
+    @property
+    def un_read_obj(self):
+        return self.messages.filter(is_read=False)
 
     def __str__(self):
         return self.name if self.name else ""

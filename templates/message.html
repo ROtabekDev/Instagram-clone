@@ -69,7 +69,7 @@
                                         <div class="col-sm-8 col-xs-8 sideBar-name">
                                             <span class="name-meta">{{ participant.user.full_name }}</span>
                                         </div>
-                                        {% if participant.chat.un_read > 0 %}
+                                        {% if participant.chat.un_read > 0 and participant.chat.un_read_obj.first.sender.id != user.id %}
                                             <div class="col-sm-4 col-xs-4 pull-right sideBar-time">
                                                 <span class="badge"
                                                       style="display: unset; background-color: green">{{ participant.chat.un_read }}</span>
@@ -223,11 +223,9 @@
         + "{{ chat.name }}"
         + '/'
     );
-    console.log(chatSocket);
     chatSocket.onmessage = function (e) {
         const data = JSON.parse(e.data);
         doom = document.querySelector('#chat-log');
-        console.log(data.type);
         if (data.type == 'chat_message') {
             if (data.user_id == {{ user.id }}) {
                 message_class = `<div class="col-sm-12 message-main-sender">
@@ -262,10 +260,6 @@
             doom.appendChild(newMessage);
         } else {
             const span = document.getElementById('direct_user');
-            console.log({{partner.user.id}});
-            console.log({{user.id}});
-            console.log({{data.user_id}});
-            console.log(data.message)
             if (({{ chat.id }}==data.chat_id) && {{ user.id }} != data.user_id){
                 if (data.message == "typing"){
                     span.textContent = data.message;
@@ -311,7 +305,6 @@
     let timer;
 
     input.addEventListener('input', () => {
-        console.log('User is typing');
         chatSocket.send(JSON.stringify({
             'type': 'get_typing',
             'message': 'is typing',
@@ -320,9 +313,6 @@
         }));
         clearTimeout(timer);
         timer = setTimeout(() => {
-            console.log('User has finished typing');
-            // Your code here
-
             chatSocket.send(JSON.stringify({
                 'type': 'get_typing',
                 'message': '',
