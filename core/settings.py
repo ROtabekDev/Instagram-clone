@@ -161,9 +161,7 @@ AUTH_USER_MODEL = "user.CustomUser"
 
 
 AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
-    'apps.user.utils.PhoneNumberBackend',
-    'apps.user.utils.EmailBackend',
+    'django.contrib.auth.backends.ModelBackend', 
     'social_core.backends.google.GoogleOAuth2',  # social auth
 ]
 
