@@ -68,6 +68,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "apps.user.custom_middleware.OnlineStatusMiddleware"
 ]
 
 ROOT_URLCONF = "core.urls"
@@ -174,9 +175,13 @@ CACHES = {
     }
 }
 
-
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels.layers.InMemoryChannelLayer"
     }
 }
+
+USER_LAST_ACTIVITY_INTERVAL = 2
+
+DATETIME_INPUT_FORMATS = ["%H:%M  %d.%m.%y"]
+DATETIME_FORMAT = "%H:%M  %d.%m.%y"

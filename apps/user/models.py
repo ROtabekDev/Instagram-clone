@@ -18,6 +18,8 @@ class CustomUser(AbstractUser, BaseModel):
     phone_number = PhoneNumberField(region="UZ", null=True, blank=True, unique=True)
     bio = models.CharField(max_length=255, null=True, blank=True)
     gender = models.CharField(max_length=6, choices=GenderType.choices, default=GenderType.MALE)
+    last_activity = models.DateTimeField(null=True, blank=True)
+    is_online = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = "User"
