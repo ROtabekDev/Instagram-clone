@@ -86,23 +86,32 @@
                         {% endif %}
                     </p>
 
+                    <div class="profile-user-settings">
+                        <a  href="{% url 'profile' user.username %}"  class="btns profiele-edit-btn">Posts</a>
+                        {% if self_profile %}
+                        <a  href="{% url 'profile-favourite' user.username %}"  class="btns profeile-edit-btn">Saved</a>
+                        {% endif %}
+                    </div>
                 </div>
 
             </div>
             <!-- End of profile section -->
-            <div class="row" style="display: flex; justify-content: center;">
+            <!-- <div class="row" style="display: flex; justify-content: center;">
 
                 <ul class="profile-stats">
                     <li class="nav-item"><a class="nav-link active">POSTS</a></li>
                     <li class="nav-item"><a class="nav-link disabled">SAVED</a></li>
                     <li class="nav-item"><a class="nav-link disabled">TAGGED</a></li>
                 </ul>
-            </div>
+            </div> -->
             
             <div class="row gallery">
-                {% for post in user.post_set.all %}
-                      
+                {% for post in posts %}
+                {% if post.post_id %}   
+                <a href="{% url 'post-detail' post.post_id.id %}">
+                {% else %}
                 <a href="{% url 'post-detail' post.id %}">
+                {% endif %}
                         <div class="gallery-item" tabindex="0">
                             {% if post.postfilecontent_set.first.type == "img" %}
                             
