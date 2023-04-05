@@ -148,7 +148,11 @@
                         <div class="profile-button__border"></div>
                         <a href="{% url 'profile' user.username  %}">
                             <div class="profile-button__picture">
-                                <img src="{% static 'assets2/images/6.jpg'%}" alt="User Picture">
+                                {% if post.user_id.avatar %}
+                                     <img src="{{ request.user.avatar.url }}" alt="User Picture">
+                                {% else %}
+                                    <img src="{% static 'default-user.png' %}" alt="User Picture">
+                                {% endif %}
                             </div>
                         </a>
                     </button>
