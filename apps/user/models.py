@@ -46,6 +46,12 @@ class CustomUser(AbstractUser, BaseModel):
             return False
         return True
 
+    def save(self, *args, **kwargs):
+
+        if self.full_name=="":
+            self.full_name=self.username
+
+        super().save(*args, **kwargs)
 
 class UserFollower(BaseModel):
     follower = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='follower')

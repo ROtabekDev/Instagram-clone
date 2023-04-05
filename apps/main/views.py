@@ -88,6 +88,33 @@ class HomeView(TemplateView):
         context['story_info'] = story_info
         context['user_id_list'] = user_id_list 
 
+        your_stories = Story.objects.filter(user=self.request.user).filter(
+            created_at__gte=timezone.now() - timezone.timedelta(hours=24)
+        )
+
+        if len(your_stories)==0:
+            your_story_info = {'user': {'message': None}}
+        elif len(your_stories)==1:
+            try:
+                for i in your_stories:
+                    story = Story.objects.get(user_id=self.request.user)
+                    StoryViewed.objects.get(user_id=self.request.user, story=i) 
+                your_story_info = {'user': {'message': True}}
+            except: 
+                your_story_info = {'user': {'message': False}}
+        else:
+            try:
+                your_stories = Story.objects.filter(user_id=self.request.user)
+                for i in your_stories: 
+                    StoryViewed.objects.get(user_id=self.request.user, story=i)
+
+                your_story_info = {'user': {'message': True}}
+            except:
+                
+                your_story_info = {'user': {'message': False}}
+
+        context['your_story_info'] = your_story_info 
+
         return context
 
 
