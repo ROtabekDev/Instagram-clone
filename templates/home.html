@@ -294,8 +294,8 @@
                                 <span> {% autoescape off %}
                                     {% post_likes_count post.id %} {% endautoescape %}</span>
                                 <span id="post_comment_count_{{ post.id }}">
-                                    <a class="post__name--underline" href="#"> {{ post.comments_count }} comment{{
-                                        post.comments_count | pluralize }}</a>
+                                    <a class="post__name--underline" 
+                                    href="#"> {{ post.comments_count }} comment{{ post.comments_count | pluralize }}</a>
                                 </span>
                             </div>
 
@@ -303,8 +303,7 @@
                                 {% if post.comment_set.last %}
                                 <span>
                                     <a class="post__name--underline"
-                                        href="{% url 'profile' post.comment_set.last.user.username %}"><b>@{{
-                                            post.comment_set.last.user.username }}</b></a>
+                                        href="{% url 'profile' post.comment_set.last.user.username %}"><b>@{{ post.comment_set.last.user.username }}</b></a>
                                     {{ post.comment_set.last.text }}
                                 </span>
                                 {% endif %}
