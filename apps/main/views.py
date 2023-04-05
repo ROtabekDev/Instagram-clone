@@ -3,7 +3,8 @@ from django.utils import timezone
 from django.shortcuts import render
 from django.views.generic import TemplateView
 from django.http import JsonResponse
-from django.db.models import Count
+from django.db.models import Count, Q
+from django.core.paginator import Paginator
 
 from apps.main.models import Comment, Notification, Like
 from apps.post.models import Post, SavedPost
@@ -145,3 +146,22 @@ def ShowNotification(request):
         notification.save()
 
     return render(request, 'show-notification.html', context)
+
+
+@login_required(login_url='sign-in')
+def UserSearch(request):
+    query = request.GET.get('q')
+    context = {}
+    if query:
+        users = CustomUser.objects.exclude(id=request.user.id).filter(Q(username__icontains=query))
+
+        # Paginator
+        paginator = Paginator(users, 8)
+        page_number = request.GET.get('page')
+        users_paginator = paginator.get_page(page_number)
+
+        context = {
+            'users': users_paginator,
+            }
+
+    return render(request, 'search.html', context)

@@ -1,7 +1,7 @@
 from django.urls import path
 
 from apps.story.views import Stories_detail, create_story
-from .views import HomeView, add_comment, ShowNotification 
+from .views import HomeView, add_comment, ShowNotification, UserSearch
 
 urlpatterns = [
     path("", HomeView.as_view(), name='home'),
@@ -11,4 +11,6 @@ urlpatterns = [
 
     path("add-comment/", add_comment, name='add-comment'),
     path("show-notification/", ShowNotification, name='show-notification'),
+
+    path('search/', UserSearch, name="search-users"),
 ]
