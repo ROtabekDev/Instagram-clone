@@ -23,7 +23,7 @@ def user_del_comment_post(sender, instance, *args, **kwargs):
     comment = instance
     post = comment.post_id
     sender = comment.user
-    notify = Notification.objects.filter(post_id=post, sender_id=sender, user_id=post.user_id, notification_type=2)[0]
+    notify = Notification.objects.filter(post_id=post, sender_id=sender, user_id=post.user_id, notification_type=2)
     notify.delete()
 
 
