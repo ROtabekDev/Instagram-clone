@@ -356,7 +356,7 @@
                 {% endfor %}
             </ul>
         {% endif %}
-        <p class="label">Enter code from SMS | {{ code }}</p>
+        <p class="label">Enter code from SMS</p>
         <!-- SMS Code input -->
         <form action="{% url 'sms-code' %}" method="post">
             {% csrf_token %}

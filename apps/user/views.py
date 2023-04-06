@@ -9,7 +9,7 @@ from django.core.cache import cache
 from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import redirect, get_object_or_404
-from django.shortcuts import render
+from django.shortcuts import render, HttpResponse
 from django.urls import resolve, reverse
 from django.utils.crypto import get_random_string
 from django.utils.decorators import method_decorator
@@ -19,8 +19,10 @@ from apps.main.models import Like
 from apps.post.models import Post
 from apps.user.models import CustomUser, UserFollower
 from apps.user.models import Participant, Chat
-from apps.user.utils import phone_regex_pattern, email_regex_pattern
+from apps.user.utils import phone_regex_pattern, email_regex_pattern, send_sms_by_phone, send_sms_by_email
 from .forms import EditProfileForm
+from django.http import JsonResponse
+from django.core import serializers
 
 
 def sign_in(request):
@@ -50,36 +52,54 @@ def sign_in(request):
 
 
 def sign_up(request):
-    if request.method == "POST":
-        r = request.POST
-        phone_or_email = r['phone_or_email']
-        full_name = r['full_name']
-        username = r['username']
-        password = r['password']
-
-        if re.match(phone_regex_pattern, phone_or_email):
-            user = authenticate(username=phone_or_email, password=password)
-        elif re.match(email_regex_pattern, phone_or_email):
-            user = authenticate(username=phone_or_email, password=password)
-        else:
-            user = authenticate(username=username, password=password)
-        if user is not None:
-            messages.error(request, f'{user} is already exist!')
-            return redirect('sign-in')
-        else:
-            session = get_random_string(11)
-            code = get_random_string(length=5, allowed_chars="0123456789")
-            user = {
-                "username": username,
-                "full_name": full_name,
-                "phone_or_email": phone_or_email,
-                "password": password
-            }
-            cache.set('user', user)
-            cache.set('session', session)
-            cache.set('code', code)
-            return render(request, 'sms-code.html', {'code': code, 'session': session})
-    return render(request, 'sign-up.html')
+    try:
+        global auth_type, result
+        if request.method == "POST":
+            r = request.POST
+            phone_or_email = r['phone_or_email']
+            full_name = r['full_name']
+            username = r['username']
+            password = r['password']
+            if re.match(phone_regex_pattern, phone_or_email):
+                user = authenticate(username=phone_or_email, password=password)
+                auth_type = "phone"
+            elif re.match(email_regex_pattern, phone_or_email):
+                user = authenticate(username=phone_or_email, password=password)
+                auth_type = "email"
+            else:
+                user = authenticate(username=username, password=password)
+            if user is not None:
+                messages.error(request, f'{user} is already exist!')
+                return redirect('sign-in')
+            else:
+                session = get_random_string(11)
+                code = get_random_string(length=5, allowed_chars="0123456789")
+                user = {
+                    "username": username,
+                    "full_name": full_name,
+                    "phone_or_email": phone_or_email,
+                    "password": password
+                }
+                cache.set('user', user)
+                cache.set('session', session)
+                cache.set('code', code)
+                if auth_type == "phone":
+                    data = {
+                        "mobile_phone": phone_or_email[1:],
+                        "message": f"Your sms code : {code}.",
+                        "from": 4546,
+                        "callback_url": "https://uic.group"
+                    }
+                    result = send_sms_by_phone(data)
+                elif auth_type == "email":
+                    result = send_sms_by_email(phone_or_email, code)
+                if result:
+                    return render(request, 'sms-code.html', {'code': code, 'session': session})
+                messages.error(request, "Phone number or email already exist!")
+        return render(request, 'sign-up.html')
+    except Exception as e:
+        messages.error(f"{e}")
+        return render(request, 'sign-up.html')
 
 
 def sms_code(request):
@@ -149,7 +169,7 @@ class MessageView(TemplateView):
                 message.is_read = True
                 message.save()
         except Exception as e:
-            pass
+            context['chat'] = Chat.objects.first()
         return self.render_to_response(context)
 
 
@@ -245,3 +265,13 @@ def edit_profile(request):
         form = EditProfileForm(instance=user)
 
     return render(request, 'edit_profile.html', {'form': form})
+
+
+def search_user(request):
+    q = request.GET.get('q')
+    users = CustomUser.objects.filter(username__icontains=q, full_name__icontains=q)
+    # data = serializers.serialize('xml', users, fields=('username', 'avatar', 'full_name', 'last_activity'), safe=False)
+    #
+    # return HttpResponse(data)
+    data = serializers.serialize('json', users, fields=('id', 'username', 'avatar', 'full_name', 'last_activity', 'is_online'))
+    return JsonResponse({'users': data})
