@@ -3,7 +3,8 @@ from django.utils import timezone
 from django.shortcuts import render
 from django.views.generic import TemplateView
 from django.http import JsonResponse
-from django.db.models import Count
+from django.db.models import Count, Q
+from django.core.paginator import Paginator
 
 from apps.main.models import Comment, Notification, Like
 from apps.post.models import Post, SavedPost
@@ -88,6 +89,33 @@ class HomeView(TemplateView):
         context['story_info'] = story_info
         context['user_id_list'] = user_id_list 
 
+        your_stories = Story.objects.filter(user=self.request.user).filter(
+            created_at__gte=timezone.now() - timezone.timedelta(hours=24)
+        )
+
+        if len(your_stories)==0:
+            your_story_info = {'user': {'message': None}}
+        elif len(your_stories)==1:
+            try:
+                for i in your_stories:
+                    story = Story.objects.get(user_id=self.request.user)
+                    StoryViewed.objects.get(user_id=self.request.user, story=i) 
+                your_story_info = {'user': {'message': True}}
+            except: 
+                your_story_info = {'user': {'message': False}}
+        else:
+            try:
+                your_stories = Story.objects.filter(user_id=self.request.user)
+                for i in your_stories: 
+                    StoryViewed.objects.get(user_id=self.request.user, story=i)
+
+                your_story_info = {'user': {'message': True}}
+            except:
+                
+                your_story_info = {'user': {'message': False}}
+
+        context['your_story_info'] = your_story_info 
+
         return context
 
 
@@ -118,3 +146,22 @@ def ShowNotification(request):
         notification.save()
 
     return render(request, 'show-notification.html', context)
+
+
+@login_required(login_url='sign-in')
+def UserSearch(request):
+    query = request.GET.get('q')
+    context = {}
+    if query:
+        users = CustomUser.objects.exclude(id=request.user.id).filter(Q(username__icontains=query))
+
+        # Paginator
+        paginator = Paginator(users, 8)
+        page_number = request.GET.get('page')
+        users_paginator = paginator.get_page(page_number)
+
+        context = {
+            'users': users_paginator,
+            }
+
+    return render(request, 'search.html', context)
