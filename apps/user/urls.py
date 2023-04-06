@@ -2,8 +2,8 @@ from django.urls import path
 from .views import (
     sign_in, sign_up, sign_out, profile, follow, unfollow,
     remove_follower, remove_following, MessageView, sms_code,
-    create_like, remove_like, edit_profile, create_chat
-    )
+    create_like, remove_like, edit_profile, create_chat, search_user
+)
 
 
 urlpatterns = [
@@ -28,5 +28,7 @@ urlpatterns = [
     path("remove-like/<int:post_id>/", remove_like, name='remove_like'), 
 
     path('profile/edit/', edit_profile, name="edit-profile"),
+
+    path('search_user', search_user, name="search-user"),
 ]
 
