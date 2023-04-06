@@ -23,9 +23,13 @@ class HomeView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        posts = Post.objects.filter(user_id__following__follower=self.request.user).exclude(
-            user_id=self.request.user)
-        context['posts'] = posts 
+        posts = Post.objects.filter(user_id__following__follower=self.request.user)
+        
+        user_posts = Post.objects.filter(user_id=self.request.user)
+         
+        posts |= user_posts
+ 
+        context['posts'] = posts.order_by('-created_at').distinct() 
         
         unfollow_users = CustomUser.objects.all().exclude(following__follower=self.request.user).exclude(
             id=self.request.user.id)

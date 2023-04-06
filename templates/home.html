@@ -160,14 +160,23 @@
 
                         </div>
 
-                        <button class="post__more-options">
+                        <!-- <button class="post__more-options">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
                                 xmlns="http://www.w3.org/2000/svg">
                                 <circle cx="6.5" cy="11.5" r="1.5" fill="var(--text-dark)" />
                                 <circle cx="12" cy="11.5" r="1.5" fill="var(--text-dark)" />
                                 <circle cx="17.5" cy="11.5" r="1.5" fill="var(--text-dark)" />
                             </svg>
-                        </button>
+                        </button> -->
+
+                        {% if post.user_id == request.user %}
+                        <a href="{% url 'post-delete' post.id %}">
+                        <button class="btn btn-danger btn-sm"  type="button">
+                            Delete Post
+                          </button>
+                           </a>
+                        {% endif %}
+
                     </div>
 
                     <div class="post__content">

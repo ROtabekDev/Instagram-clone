@@ -91,6 +91,14 @@ def PostDetail(request, post_id):
 
 
 @login_required(login_url='sign-in')
+def deletepost(request, post_id): 
+
+    Post.objects.filter(user_id=request.user, pk=post_id).delete() 
+
+    return redirect('/')
+    # return HttpResponseRedirect(reverse('profile', args=[username]))
+
+@login_required(login_url='sign-in')
 def create_savedpost(request, post_id):
 
     user = get_object_or_404(CustomUser, username=request.user.username)
