@@ -137,4 +137,3 @@ class Message(BaseModel):
     class Meta:
         verbose_name = "Message"
         verbose_name_plural = "Messages"
-        # ordering = ['-created_at']

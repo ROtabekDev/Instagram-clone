@@ -5,11 +5,13 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
 from django.contrib.contenttypes.models import ContentType
+from django.core import serializers
 from django.core.cache import cache
 from django.db.models import Q
 from django.http import HttpResponseRedirect
+from django.http import JsonResponse
 from django.shortcuts import redirect, get_object_or_404
-from django.shortcuts import render, HttpResponse
+from django.shortcuts import render
 from django.urls import resolve, reverse
 from django.utils.crypto import get_random_string
 from django.utils.decorators import method_decorator
@@ -21,8 +23,6 @@ from apps.user.models import CustomUser, UserFollower
 from apps.user.models import Participant, Chat
 from apps.user.utils import phone_regex_pattern, email_regex_pattern, send_sms_by_phone, send_sms_by_email
 from .forms import EditProfileForm
-from django.http import JsonResponse
-from django.core import serializers
 
 
 def sign_in(request):
@@ -184,11 +184,6 @@ def create_chat(request, user_id):
 
         return redirect(f'/message/{chat.name}')
 
-    # def get_context_data(self, **kwargs):
-    #     context = super().get_context_data(**kwargs)
-    #     context['posts'] = Post.objects.filter(user_id__following__follower=self.request.user).exclude(
-    #         user_id=self.request.user)
-    #     return context
 
 
 @login_required(login_url='sign-in')
@@ -270,8 +265,6 @@ def edit_profile(request):
 def search_user(request):
     q = request.GET.get('q')
     users = CustomUser.objects.filter(username__icontains=q, full_name__icontains=q)
-    # data = serializers.serialize('xml', users, fields=('username', 'avatar', 'full_name', 'last_activity'), safe=False)
-    #
-    # return HttpResponse(data)
-    data = serializers.serialize('json', users, fields=('id', 'username', 'avatar', 'full_name', 'last_activity', 'is_online'))
+    data = serializers.serialize('json', users,
+                                 fields=('id', 'username', 'avatar', 'full_name', 'last_activity', 'is_online'))
     return JsonResponse({'users': data})
