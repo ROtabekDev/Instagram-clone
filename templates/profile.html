@@ -48,9 +48,8 @@
                         </button>
 
                     {% elif user_follow %}
-                        <a href="{% url 'unfollow_user' user.username %}">
-                            <button class="btn profile-edit-btn">Following</button>
-                        </a>
+                    <a href="{% url 'unfollow_user' user.username %}"><button  class="btn profile-edit-btn">Following</button></a>
+                    <a href="{% url 'create-chat' user.id %}"><button  class="btn profile-edit-btn">Message</button></a>
                     {% else %}
                         <a href="{% url 'follow_user' user.username %}">
                             <button class="btn profile-edit-btn" style="background-color: blue; color: white;">Follow
@@ -62,6 +61,7 @@
                             <button class="btn profile-edit-btn">Message</button>
                         </a>
                     {% endif %}
+
                     </button>
 
                     <!-- LogoutModal -->
